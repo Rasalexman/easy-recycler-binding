@@ -1,0 +1,3 @@
+include ':easy-recycler-binding'
+include ':app'
+rootProject.name = "EasyRecyclerBinding"
