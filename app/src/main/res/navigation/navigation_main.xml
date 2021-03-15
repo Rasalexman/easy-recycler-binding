@@ -6,5 +6,35 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.rasalexman.erb.ui.main.MainFragment"
-        android:label="MainFragment" />
+        android:label="MainFragment">
+
+        <action
+            android:id="@+id/showRecyclerViewFragment"
+            app:destination="@id/rvFragment"/>
+
+        <action
+            android:id="@+id/showViewPagerFragment"
+            app:destination="@id/vpFragment"/>
+
+        <action
+            android:id="@+id/showViewPager2Fragment"
+            app:destination="@id/vp2Fragment"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/rvFragment"
+        android:name="com.rasalexman.erb.ui.recyclerexample.RecyclerViewExampleFragment"
+        android:label="RecyclerViewExampleFragment" />
+
+    <fragment
+        android:id="@+id/vpFragment"
+        android:name="com.rasalexman.erb.ui.viewpagerexample.ViewPagerExampleFragment"
+        android:label="ViewPagerExampleFragment" />
+
+    <fragment
+        android:id="@+id/vp2Fragment"
+        android:name="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleFragment"
+        android:label="ViewPager2ExampleFragment" />
+
 </navigation>

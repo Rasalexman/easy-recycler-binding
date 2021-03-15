@@ -1,6 +1,5 @@
 package com.rasalexman.easyrecyclerbinding
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -132,6 +131,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.layoutManager = mLayoutManager
 
             dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
+                recyclerView.clearOnScrollListeners()
                 recyclerView.addOnScrollListener(object : EndlessRecyclerOnScrollListener(mLayoutManager, visibleThreshold) {
                     override fun onLoadMore(currentPage: Int) {
                         onLoadMoreHandler(currentPage)
@@ -150,18 +150,16 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.defaultFocusHighlightEnabled = false
         }
 
-        dataBindingRecyclerViewConfig.let {
-                recyclerView.adapter = DataBindingRecyclerAdapter(
-                    items = oldItems,
-                    lifecycleOwner = dataBindingRecyclerViewConfig.lifecycleOwner,
-                    layoutId = dataBindingRecyclerViewConfig.layoutId,
-                    itemId = dataBindingRecyclerViewConfig.itemId,
-                    realisation = dataBindingRecyclerViewConfig.realisation,
-                    onItemClickListener = dataBindingRecyclerViewConfig.onItemClickListener,
-                    onItemDoubleClickListener = dataBindingRecyclerViewConfig.onItemDoubleClickListener,
-                    onItemLongClickListener = dataBindingRecyclerViewConfig.onItemLongClickListener
-                )
-        }
+        recyclerView.adapter = DataBindingRecyclerAdapter(
+            items = oldItems,
+            lifecycleOwner = dataBindingRecyclerViewConfig.lifecycleOwner,
+            layoutId = dataBindingRecyclerViewConfig.layoutId,
+            itemId = dataBindingRecyclerViewConfig.itemId,
+            realisation = dataBindingRecyclerViewConfig.realisation,
+            onItemClickListener = dataBindingRecyclerViewConfig.onItemClickListener,
+            onItemDoubleClickListener = dataBindingRecyclerViewConfig.onItemDoubleClickListener,
+            onItemLongClickListener = dataBindingRecyclerViewConfig.onItemLongClickListener
+        )
     }
 
     val adapter = recyclerView.adapter!!
@@ -315,7 +313,7 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
         }
 
         onItemLongClickListener?.let {
-            binding.root.setOnLongClickListener { view ->
+            binding.root.setOnLongClickListener { _ ->
                 val position = result.absoluteAdapterPosition
                 it.onItemLongClicked(items!![position]!!, position)
                 false

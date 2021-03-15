@@ -1,7 +1,18 @@
 package com.rasalexman.erb.ui.main
 
-import androidx.lifecycle.ViewModel
+import com.rasalexman.erb.ui.base.BaseViewModel
 
-class MainViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
+class MainViewModel : BaseViewModel() {
+
+    fun onVpButtonClicked() {
+        navigationState.value = MainFragmentDirections.showViewPagerFragment()
+    }
+
+    fun onVp2ButtonClicked() {
+        navigationState.value = MainFragmentDirections.showViewPager2Fragment()
+    }
+
+    fun onRvButtonClicked() {
+        navigationState.value = MainFragmentDirections.showRecyclerViewFragment()
+    }
 }

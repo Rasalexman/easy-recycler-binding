@@ -1,4 +1,4 @@
-package com.rasalexman.erb.ui.main.base
+package com.rasalexman.erb.ui.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.ViewModel
+import com.rasalexman.easyrecyclerbinding.createBindingWithViewModel
 import com.rasalexman.erb.BR
 
-abstract class BaseBindingFragment<B : ViewDataBinding, VM : ViewModel> : BaseFragment<VM>() {
+abstract class BaseBindingFragment<B : ViewDataBinding, VM : BaseViewModel> : BaseFragment<VM>() {
 
     var binding: B? = null
 
@@ -18,10 +19,13 @@ abstract class BaseBindingFragment<B : ViewDataBinding, VM : ViewModel> : BaseFr
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return DataBindingUtil.inflate<B>(inflater, layoutId,  container, false).also{
+        return createBindingWithViewModel<B, VM>(
+            layoutId = layoutId,
+            container = container,
+            viewModel = viewModel,
+            viewModelBRId = BR.vm
+        ).also {
             binding = it
-            it.lifecycleOwner = viewLifecycleOwner
-            it.setVariable(BR.vm, viewModel)
             initBinding(it)
         }.root
     }

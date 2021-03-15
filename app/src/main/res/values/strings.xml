@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">EasyRecyclerBinding</string>
+
+    <string name="title_menu">Menu</string>
+    <string name="button_title_recycler">RecyclerView</string>
+    <string name="button_title_vp">ViewPager</string>
+    <string name="button_title_vp2">ViewPager2</string>
+
+    <string name="tab_title_first">FIRST PAGE</string>
+    <string name="tab_title_second">SECOND PAGE</string>
+
+    <string-array name="vp_titles">
+        <item>@string/tab_title_first</item>
+        <item>@string/tab_title_second</item>
+    </string-array>
 </resources>

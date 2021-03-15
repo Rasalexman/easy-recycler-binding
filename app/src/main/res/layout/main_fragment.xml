@@ -9,8 +9,10 @@
         type="com.rasalexman.erb.ui.main.MainViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/main"
+        android:orientation="vertical"
+        android:gravity="center_horizontal|center_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.main.MainFragment">
@@ -19,11 +21,37 @@
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MainFragment"
+            android:text="@string/title_menu"
+            android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/button_title_recycler"
+            android:onClick="@{() -> vm.onRvButtonClicked()}"
+            />
+
+        <Button
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/button_title_vp"
+            android:onClick="@{() -> vm.onVpButtonClicked()}"
+            />
+
+        <Button
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/button_title_vp2"
+            android:onClick="@{() -> vm.onVp2ButtonClicked()}"
+            />
+
+    </LinearLayout>
 </layout>
