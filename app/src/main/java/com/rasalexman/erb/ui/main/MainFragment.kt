@@ -1,30 +1,12 @@
 package com.rasalexman.erb.ui.main
 
-import androidx.lifecycle.ViewModelProvider
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import com.rasalexman.erb.R
+import com.rasalexman.erb.databinding.MainFragmentBinding
+import com.rasalexman.erb.ui.main.base.BaseBindingFragment
 
-class MainFragment : Fragment() {
+class MainFragment : BaseBindingFragment<MainFragmentBinding, MainViewModel>() {
 
-    companion object {
-        fun newInstance() = MainFragment()
-    }
-
-    private lateinit var viewModel: MainViewModel
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.main_fragment, container, false)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
-
+    override val viewModel: MainViewModel by viewModels<MainViewModel>()
+    override val layoutId: Int get() = R.layout.main_fragment
 }

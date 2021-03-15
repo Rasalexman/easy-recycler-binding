@@ -1,13 +1,11 @@
 package com.rasalexman.easyrecyclerbinding
 
-
 import android.annotation.SuppressLint
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
-import androidx.annotation.NonNull
 import androidx.databinding.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -102,7 +100,7 @@ fun getSelectedPosition(viewPager: ViewPager2): Int {
     return viewPager.currentItem
 }
 
-@BindingAdapter(value = ["items", "data", "rv_config", "visibleThreshold"], requireAll = false)
+@BindingAdapter(value = ["items", "rv_config", "visibleThreshold"], requireAll = false)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView: RecyclerView,
     newItems: List<ItemType>?,
@@ -327,12 +325,12 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
         return result
     }
 
-    override fun onBindViewHolder(@NonNull holder: BindingViewHolder, @SuppressLint("RecyclerView") position: Int) {
+    @Suppress("UNCHECKED_CAST")
+    override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
         if (itemId != -1) {
             holder.binding.setVariable(itemId, items!![holder.absoluteAdapterPosition])
             holder.binding.lifecycleOwner = lifecycleOwner
         }
-        @Suppress("UNCHECKED_CAST")
         onBind(holder.binding as BindingType, holder.absoluteAdapterPosition)
         holder.binding.executePendingBindings()
     }
