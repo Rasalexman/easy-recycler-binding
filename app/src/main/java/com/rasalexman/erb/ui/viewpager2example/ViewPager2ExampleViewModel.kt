@@ -1,6 +1,10 @@
 package com.rasalexman.erb.ui.viewpager2example
 
-import com.rasalexman.erb.ui.base.BaseItemsPageViewModel
+import androidx.lifecycle.MutableLiveData
+import com.rasalexman.easyrecyclerbinding.IBindingModel
+import com.rasalexman.erb.ui.base.BasePagesViewModel
 
-class ViewPager2ExampleViewModel : BaseItemsPageViewModel() {
+class ViewPager2ExampleViewModel : BasePagesViewModel() {
+
+    val items: MutableLiveData<List<IBindingModel>> = MutableLiveData()
 }

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.rasalexman.easyrecyclerbinding.PageSelectionListener
 
-abstract class BaseItemsPageViewModel : BaseItemsViewModel(), PageSelectionListener {
+abstract class BasePagesViewModel : BaseViewModel(), PageSelectionListener {
     val selectedTab: MutableLiveData<Int> = MutableLiveData()
 
     override fun onPageSelected(position: Int) {

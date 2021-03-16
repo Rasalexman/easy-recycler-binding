@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-    <variable
-        name="vm"
-        type="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleViewModel" />
+
+        <variable
+            name="vm"
+            type="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleViewModel" />
 
         <variable
             name="vpConfig"
@@ -27,6 +28,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:items="@{vm.items}"
             app:selectedPage="@={vm.selectedTab}"
             app:vp_config="@{vpConfig}">
 

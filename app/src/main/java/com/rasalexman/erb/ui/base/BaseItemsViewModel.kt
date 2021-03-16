@@ -9,8 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-abstract class BaseItemsViewModel : BaseViewModel() {
-    val items: MutableLiveData<MutableList<IBindingModel>> = MutableLiveData()
+abstract class BaseItemsViewModel : BasePagesViewModel() {
+    open val items: MutableLiveData<MutableList<IBindingModel>> = MutableLiveData()
 
     init {
         createItems()
@@ -22,22 +22,26 @@ abstract class BaseItemsViewModel : BaseViewModel() {
             val existedList = items.value ?: mutableListOf()
             val itemsCount = existedList.size
             repeat(100) {
-                itemsList.add(
-                    if(it%2 == 0) {
-                        RecyclerItemUI(
-                            title = "This is a title number ${itemsCount+it}",
-                            id = UUID.randomUUID().toString()
-                        )
-                    } else {
-                        RecyclerItemUI2(
-                            title = "This is a title number ${itemsCount+it}",
-                            id = UUID.randomUUID().toString()
-                        )
-                    }
-                )
+                itemsList.add(itemsCreator(itemsCount, it))
             }
             existedList.addAll(itemsList)
             items.postValue(existedList)
+        }
+    }
+
+    private fun itemsCreator(itemsCount: Int, position: Int): IBindingModel {
+        val nextPositionNumber = itemsCount + position
+        val nextId = UUID.randomUUID().toString()
+        return if (position % 2 == 0) {
+            RecyclerItemUI(
+                    title = "This is a title number $nextPositionNumber",
+                    id = nextId
+            )
+        } else {
+            RecyclerItemUI2(
+                    title = "This is a title number $nextPositionNumber",
+                    id = nextId
+            )
         }
     }
 }

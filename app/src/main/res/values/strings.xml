@@ -6,8 +6,14 @@
     <string name="button_title_vp">ViewPager</string>
     <string name="button_title_vp2">ViewPager2</string>
 
+    <string name="button_title_sing_in">Sing in</string>
+    <string name="button_title_sing_up">Sing up</string>
+
     <string name="tab_title_first">FIRST PAGE</string>
     <string name="tab_title_second">SECOND PAGE</string>
+
+    <string name="hint_enter_login">Enter login</string>
+    <string name="hint_enter_password">Enter password</string>
 
     <string-array name="vp_titles">
         <item>@string/tab_title_first</item>

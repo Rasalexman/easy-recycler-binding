@@ -1,8 +1,8 @@
 package com.rasalexman.erb.ui.viewpagerexample
 
-import com.rasalexman.erb.ui.base.BaseItemsPageViewModel
+import com.rasalexman.erb.ui.base.BaseItemsViewModel
 
-class ViewPagerExampleViewModel : BaseItemsPageViewModel() {
+class ViewPagerExampleViewModel : BaseItemsViewModel() {
 
 
 }
