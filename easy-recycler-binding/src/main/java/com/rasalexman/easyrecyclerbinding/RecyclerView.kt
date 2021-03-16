@@ -149,25 +149,21 @@ private fun <ItemType : Any> applyData(
     oldItems: MutableList<ItemType>?,
     newItems: List<ItemType>?
 ) {
-    when (adapter) {
-        is DataBindingRecyclerAdapter<*, *> -> {
-            if (oldItems !== newItems) {
-                oldItems?.let { old ->
-                    old.clear()
-                    newItems?.let {
-                        old.addAll(newItems)
-                    }
-                }
-            } else {
-                oldItems?.let { old ->
-                    newItems?.let {
-                        old.addAll(newItems)
-                    }
-                }
+    if (oldItems !== newItems) {
+        oldItems?.let { old ->
+            old.clear()
+            newItems?.let {
+                old.addAll(newItems)
             }
-            adapter.notifyDataSetChanged()
+        }
+    } else {
+        oldItems?.let { old ->
+            newItems?.let {
+                old.addAll(newItems)
+            }
         }
     }
+    adapter.notifyDataSetChanged()
 }
 
 data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
