@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-    <variable
-        name="vm"
-        type="com.rasalexman.erb.ui.viewpagerexample.ViewPagerExampleViewModel" />
+
+        <variable
+            name="vm"
+            type="com.rasalexman.erb.ui.viewpagerexample.ViewPagerExampleViewModel" />
 
         <variable
             name="viewPagerSettings"
@@ -17,18 +18,19 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainFragment">
+        tools:context=".ui.viewpagerexample.ViewPagerExampleFragment">
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewpager"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:vp_settings="@{viewPagerSettings}"
-            app:tabPosition="@{vm.selectedTab}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" >
+            app:layout_constraintTop_toTopOf="parent"
+            app:pageSelectionListener="@{vm}"
+            app:tabPosition="@={vm.selectedTab}"
+            app:vp_settings="@{viewPagerSettings}">
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_strip"

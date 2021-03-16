@@ -1,9 +1,8 @@
 package com.rasalexman.erb.ui.viewpagerexample
 
-import androidx.lifecycle.MutableLiveData
-import com.rasalexman.erb.ui.base.BaseItemsViewModel
+import com.rasalexman.erb.ui.base.BaseItemsPageViewModel
 
-class ViewPagerExampleViewModel : BaseItemsViewModel() {
+class ViewPagerExampleViewModel : BaseItemsPageViewModel() {
 
-    val selectedTab: MutableLiveData<Int> = MutableLiveData()
+
 }

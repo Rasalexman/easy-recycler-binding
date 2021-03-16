@@ -46,40 +46,13 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
     }
 
     if (viewPager.adapter == null) {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
-
-        viewPager.apply {
-            adapter = DataBindingRecyclerAdapter(
-                items = oldItems,
-                layoutId = dataBindingRecyclerViewConfig.layoutId,
-                itemId = dataBindingRecyclerViewConfig.itemId,
-                realisation = dataBindingRecyclerViewConfig.realisation,
-                onItemClickListener = dataBindingRecyclerViewConfig.onItemClickListener,
-                onItemDoubleClickListener = dataBindingRecyclerViewConfig.onItemDoubleClickListener,
-                onItemLongClickListener = dataBindingRecyclerViewConfig.onItemLongClickListener
-            )
-        }
+        viewPager.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems!!)
     }
 
-    val adapter = viewPager.adapter!!
-    if (oldItems !== newItems) {
-        oldItems?.let { old ->
-            old.clear()
-            newItems?.let {
-                old.addAll(newItems)
-            }
-        }
-    } else {
-        oldItems?.let { old ->
-            newItems?.let {
-                old.addAll(newItems)
-            }
-        }
-    }
-    adapter.notifyDataSetChanged()
+    applyData(viewPager.adapter!!, oldItems, newItems)
 }
 
 @BindingAdapter(value = ["selectedPage", "positionAttrChanged"], requireAll = false)
@@ -150,23 +123,28 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.defaultFocusHighlightEnabled = false
         }
 
-        recyclerView.adapter = DataBindingRecyclerAdapter(
-            items = oldItems,
-            lifecycleOwner = dataBindingRecyclerViewConfig.lifecycleOwner,
-            layoutId = dataBindingRecyclerViewConfig.layoutId,
-            itemId = dataBindingRecyclerViewConfig.itemId,
-            realisation = dataBindingRecyclerViewConfig.realisation,
-            onItemClickListener = dataBindingRecyclerViewConfig.onItemClickListener,
-            onItemDoubleClickListener = dataBindingRecyclerViewConfig.onItemDoubleClickListener,
-            onItemLongClickListener = dataBindingRecyclerViewConfig.onItemLongClickListener
-        )
+        recyclerView.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems!!)
     }
 
     val adapter = recyclerView.adapter!!
-    recyclerView.applyData<ItemType, BindingType>(adapter, oldItems, newItems)
+    applyData(adapter, oldItems, newItems)
 }
 
-private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.applyData(
+@Suppress("UNCHECKED_CAST")
+private fun<ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(items: List<ItemType>): RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder> {
+    return DataBindingRecyclerAdapter(
+        items = items,
+        lifecycleOwner = this.lifecycleOwner,
+        layoutId = this.layoutId,
+        itemId = this.itemId,
+        realisation = this.realisation,
+        onItemClickListener = this.onItemClickListener,
+        onItemDoubleClickListener = this.onItemDoubleClickListener,
+        onItemLongClickListener = this.onItemLongClickListener
+    )
+}
+
+private fun <ItemType : Any> applyData(
     adapter: RecyclerView.Adapter<*>,
     oldItems: MutableList<ItemType>?,
     newItems: List<ItemType>?
@@ -219,7 +197,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
-                layoutId = layoutId ?: throw NullPointerException("DataBindingRecyclerViewConfig::layoutId must not be null"),
+                layoutId = layoutId ?: -1,
                 itemId = itemId ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
                 lifecycleOwner = lifecycleOwner,
                 orientation = orientation,
@@ -274,7 +252,7 @@ inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecy
 }
 
 class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
-    private val items: List<ItemType>?,
+    private val items: List<ItemType>,
     private val layoutId: Int,
     private val itemId: Int,
     private val lifecycleOwner: LifecycleOwner? = null,
@@ -287,11 +265,11 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
 
 
     override fun getItemCount(): Int {
-        return items?.size ?: 0
+        return items.size
     }
 
     override fun getItemViewType(position: Int): Int {
-        return layoutId
+        return (items.getOrNull(position) as? IBindingModel)?.layoutResId ?: layoutId
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
@@ -302,12 +280,12 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
             binding.root.setOnClickListener(object : DoubleClickListener() {
                 override fun onSingleClick(view: View) {
                     val position = result.absoluteAdapterPosition
-                    onItemClickListener?.onItemClicked(items!![position]!!, position)
+                    onItemClickListener?.onItemClicked(items[position]!!, position)
                 }
 
                 override fun onDoubleClick(view: View) {
                     val position = result.absoluteAdapterPosition
-                    onItemDoubleClickListener?.onItemDoubleClicked(items!![position]!!, position)
+                    onItemDoubleClickListener?.onItemDoubleClicked(items[position]!!, position)
                 }
             })
         }
@@ -315,7 +293,7 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
         onItemLongClickListener?.let {
             binding.root.setOnLongClickListener { _ ->
                 val position = result.absoluteAdapterPosition
-                it.onItemLongClicked(items!![position]!!, position)
+                it.onItemLongClicked(items[position]!!, position)
                 false
             }
         }
@@ -326,7 +304,7 @@ class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
     @Suppress("UNCHECKED_CAST")
     override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
         if (itemId != -1) {
-            holder.binding.setVariable(itemId, items!![holder.absoluteAdapterPosition])
+            holder.binding.setVariable(itemId, items[holder.absoluteAdapterPosition])
             holder.binding.lifecycleOwner = lifecycleOwner
         }
         onBind(holder.binding as BindingType, holder.absoluteAdapterPosition)

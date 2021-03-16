@@ -53,3 +53,9 @@ fun<I : Any, BT : ViewDataBinding> Fragment.createRecyclerConfig(
 ): DataBindingRecyclerViewConfig<BT> {
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().also { it.lifecycleOwner = viewLifecycleOwner }.apply(block).build()
 }
+
+fun Fragment.createRecyclerMultiConfig(
+    block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit
+): DataBindingRecyclerViewConfig<ViewDataBinding> {
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>().also { it.lifecycleOwner = viewLifecycleOwner }.apply(block).build()
+}
