@@ -247,6 +247,10 @@ inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecy
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block).build()
 }
 
+inline fun recyclerMultiConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit): DataBindingRecyclerViewConfig<ViewDataBinding> {
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>().apply(block).build()
+}
+
 class DataBindingRecyclerAdapter<ItemType, BindingType : ViewDataBinding>(
     private val items: List<ItemType>,
     private val layoutId: Int,
