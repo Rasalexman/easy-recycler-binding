@@ -2,6 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'maven-publish'
+
+
+
 android {
     compileSdkVersion 30
     buildToolsVersion "29.0.3"
@@ -18,7 +24,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -49,3 +55,6 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+
+// comment this apply function if you fork this project
+apply from: 'deploy.gradle'
