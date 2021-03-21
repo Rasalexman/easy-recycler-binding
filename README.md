@@ -92,7 +92,7 @@ Maven:
 <dependency>
 	<groupId>com.rasalexman.easyrecyclerbinding</groupId>
 	<artifactId>easyrecyclerbinding</artifactId>
-	<version>0.0.3</version>
+	<version>x.y.z</version>
 	<type>pom</type>
 </dependency>
 ```
