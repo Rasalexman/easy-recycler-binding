@@ -31,13 +31,34 @@ val items: MutableLiveData<MutableList<RecyclerItemUI>> = MutableLiveData()
 ```
 3) After all create binding config from your Fragment and set it to layout variable `rvConfig`. You should defenitely specify `itemId = BR.item` for your viewHolders binding and `layoutId` - for single ViewHolder layout.
 ```
+//in R.layout.item_recycler add
+<data>
+
+        <variable
+            name="item"
+            type="com.rasalexman.erb.models.RecyclerItemUI" />
+    </data>
+
+// in Fragment (onViewCreated with binding implementation) add
 binding.rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
 	layoutId = R.layout.item_recycler
         itemId = BR.item 
-        onItemClick = { item: IBindingModel, pos: Int ->
+        onItemClick = { item: RecyclerItemUI, position: Int ->
            Log.d("ITEM_POSITION", "Position = $pos")
         }
-        onLoadMore = {
+	onItemCreate = { binding: ItemRecyclerBinding ->
+	
+	}
+	onItemBind = { binding: ItemRecyclerBinding, position: Int ->
+	
+	}
+	onItemDoubleClicked = { item: RecyclerItemUI, position: Int ->
+	
+	}
+	onItemLongClickListener = { item: RecyclerItemUI, position: Int ->
+	
+	}
+        onLoadMore = { position: Int ->
            // load more items
         }
 }
@@ -71,7 +92,7 @@ Maven:
 <dependency>
 	<groupId>com.rasalexman.easyrecyclerbinding</groupId>
 	<artifactId>easyrecyclerbinding</artifactId>
-	<version>0.0.3</version>
+	<version>x.y.z</version>
 	<type>pom</type>
 </dependency>
 ```
