@@ -16,7 +16,7 @@
         android:background="@android:drawable/list_selector_background">
 
         <TextView
-            android:id="@+id/rvTitle"
+            android:id="@+id/titleTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
@@ -31,7 +31,6 @@
             tools:text="Hello world" />
 
         <TextView
-            android:id="@+id/rvDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
@@ -42,7 +41,7 @@
             android:text="@{item.id}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rvTitle"
+            app:layout_constraintTop_toBottomOf="@+id/titleTV"
             tools:text="Hello world" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
