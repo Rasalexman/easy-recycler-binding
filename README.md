@@ -3,6 +3,58 @@ ERB is an library with some useful Kotlin Android data bindings adapters for Rec
 
 [ ![Kotlin 1.4.31](https://img.shields.io/badge/Kotlin-1.4.31-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/sphc/EasyRecyclerBinding/easyrecyclerbinding/images/download.svg?version=0.0.3) ](https://bintray.com/sphc/EasyRecyclerBinding/easyrecyclerbinding/0.0.3/link)
 
+How to use with RecyclerView:
+1) Add to you layout xml file your variable for viewModel and `DataBindingRecyclerViewConfig`
+```
+<data>
+    <variable
+        name="vm"
+        type="YourViewModelImplementaton" />
+
+        <variable
+            name="rvConfig"
+            type="com.rasalexman.easyrecyclerbinding.DataBindingRecyclerViewConfig" />
+    </data>
+```
+2) Add data binding properties to your RecyclerView 
+`app:items` -  List of ui data models to use in your RecyclerView viewHolders. It can be a multi-layout viewHolders if you implement `com.rasalexman.easyrecyclerbinding.IBindingModel` to your ui data models. 
+`app:rv_config="@{rvConfig}"` - your binding config
+```
+val items: MutableLiveData<MutableList<RecyclerItemUI>> = MutableLiveData()
+
+<androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:items="@{vm.items}"
+            app:rv_config="@{rvConfig}"
+            />
+```
+3) After all create binding config from your Fragment and set it to layout variable `rvConfig`. You should defenitely specify `itemId = BR.item` for your viewHolders binding and `layoutId` - for single ViewHolder layout.
+```
+binding.rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
+	layoutId = R.layout.item_recycler
+        itemId = BR.item 
+        onItemClick = { item: IBindingModel, pos: Int ->
+           Log.d("ITEM_POSITION", "Position = $pos")
+        }
+        onLoadMore = {
+           // load more items
+        }
+}
+```
+4) Multi-layout viewHolders can be used with `com.rasalexman.easyrecyclerbinding.IBindingModel`
+```
+// into your ViewModel
+val items: MutableLiveData<MutableList<IBindingModel>> = MutableLiveData()
+
+// into Fragment
+binding.rvConfig = createRecyclerMultiConfig {
+	itemId = BR.item
+}
+```
+
+See simple app project for more examples with ViewPager and ViewPager2
+	
 
 First of all add repository to your project gradle file
 `maven { url 'https://dl.bintray.com/sphc/EasyRecyclerBinding' }`
