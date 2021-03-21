@@ -156,7 +156,7 @@ dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
     implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
-    implementation(project(":easy-recycler-binding"))
+    //implementation(project(":easy-recycler-binding"))
 
     implementation(appdependencies.Libs.Core.coreKtx)
     implementation(appdependencies.Libs.Core.constraintlayout)
@@ -164,6 +164,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.navigationUiKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.material)
+    implementation("com.github.rasalexman:easy-recycler-binding:0.0.3")
 
     /*implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
