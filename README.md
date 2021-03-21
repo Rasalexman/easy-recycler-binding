@@ -43,10 +43,22 @@ val items: MutableLiveData<MutableList<RecyclerItemUI>> = MutableLiveData()
 binding.rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
 	layoutId = R.layout.item_recycler
         itemId = BR.item 
-        onItemClick = { item: IBindingModel, pos: Int ->
+        onItemClick = { item: RecyclerItemUI, position: Int ->
            Log.d("ITEM_POSITION", "Position = $pos")
         }
-        onLoadMore = {
+	onItemCreate = { binding: ItemRecyclerBinding ->
+	
+	}
+	onItemBind = { binding: ItemRecyclerBinding, position: Int ->
+	
+	}
+	onItemDoubleClicked = { item: RecyclerItemUI, position: Int ->
+	
+	}
+	onItemLongClickListener = { item: RecyclerItemUI, position: Int ->
+	
+	}
+        onLoadMore = { position: Int ->
            // load more items
         }
 }
