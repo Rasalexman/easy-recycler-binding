@@ -31,6 +31,15 @@ val items: MutableLiveData<MutableList<RecyclerItemUI>> = MutableLiveData()
 ```
 3) After all create binding config from your Fragment and set it to layout variable `rvConfig`. You should defenitely specify `itemId = BR.item` for your viewHolders binding and `layoutId` - for single ViewHolder layout.
 ```
+//in R.layout.item_recycler add
+<data>
+
+        <variable
+            name="item"
+            type="com.rasalexman.erb.models.RecyclerItemUI" />
+    </data>
+
+// in Fragment (onViewCreated with binding implementation) add
 binding.rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
 	layoutId = R.layout.item_recycler
         itemId = BR.item 
