@@ -1,5 +1,5 @@
 # easy-recycler-binding
-ERB is an library with some useful Kotlin Android data bindings adapters for RecyclerView with multiply ViewHolders view
+ERB is an library with some useful Kotlin Android data bindings adapters for RecyclerView, ViewPager and ViewPager2 with multiply ViewHolders view
 
 [ ![Kotlin 1.4.31](https://img.shields.io/badge/Kotlin-1.4.31-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/sphc/EasyRecyclerBinding/easyrecyclerbinding/images/download.svg?version=0.0.3) ](https://bintray.com/sphc/EasyRecyclerBinding/easyrecyclerbinding/0.0.3/link) [![](https://jitpack.io/v/Rasalexman/easy-recycler-binding.svg)](https://jitpack.io/#Rasalexman/easy-recycler-binding)
 
