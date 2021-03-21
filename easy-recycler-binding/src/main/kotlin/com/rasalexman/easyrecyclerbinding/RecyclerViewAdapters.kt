@@ -99,7 +99,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     if (recyclerView.adapter == null) {
 
         if (recyclerView.layoutManager == null) {
-            val mLayoutManager: RecyclerView.LayoutManager =
+            val mLayoutManager: RecyclerView.LayoutManager = dataBindingRecyclerViewConfig.layoutManager ?:
                 LinearLayoutManager(recyclerView.context, dataBindingRecyclerViewConfig.orientation, false)
             recyclerView.layoutManager = mLayoutManager
 
@@ -175,7 +175,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val onItemClickListener: OnRecyclerItemClickListener? = null,
     val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
     val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null,
-    val onScrollListener: ((Int) -> Unit)? = null
+    val onScrollListener: ((Int) -> Unit)? = null,
+    val layoutManager: RecyclerView.LayoutManager? = null
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -190,6 +191,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onItemClick:((I, Int) -> Unit)? = null
         var onItemDoubleClicked: ((I, Int) -> Unit)? = null
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
+        var layoutManager: RecyclerView.LayoutManager? = null
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
@@ -197,6 +199,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 itemId = itemId ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
                 lifecycleOwner = lifecycleOwner,
                 orientation = orientation,
+                layoutManager = layoutManager,
                 realisation = object : DataBindingAdapter<BT> {
                     override fun onCreate(binding: BT) {
                         onItemCreate?.invoke(binding)
@@ -280,12 +283,12 @@ class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
             binding.root.setOnClickListener(object : DoubleClickListener() {
                 override fun onSingleClick(view: View) {
                     val position = result.absoluteAdapterPosition
-                    onItemClickListener?.onItemClicked(items[position]!!, position)
+                    onItemClickListener?.onItemClicked(items[position], position)
                 }
 
                 override fun onDoubleClick(view: View) {
                     val position = result.absoluteAdapterPosition
-                    onItemDoubleClickListener?.onItemDoubleClicked(items[position]!!, position)
+                    onItemDoubleClickListener?.onItemDoubleClicked(items[position], position)
                 }
             })
         }
@@ -293,7 +296,7 @@ class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         onItemLongClickListener?.let {
             binding.root.setOnLongClickListener { _ ->
                 val position = result.absoluteAdapterPosition
-                it.onItemLongClicked(items[position]!!, position)
+                it.onItemLongClicked(items[position], position)
                 false
             }
         }

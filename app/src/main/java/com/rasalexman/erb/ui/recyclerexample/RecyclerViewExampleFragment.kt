@@ -17,6 +17,7 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
     override fun initBinding(binding: RvExampleFragmentBinding) {
         super.initBinding(binding)
         binding.rvConfig = createRecyclerMultiConfig {
+            layoutId = R.layout.item_recycler
             itemId = BR.item
             onItemClick = { item: IBindingModel, pos: Int ->
                 Log.d("ITEM_POSITION", "Position = $pos")

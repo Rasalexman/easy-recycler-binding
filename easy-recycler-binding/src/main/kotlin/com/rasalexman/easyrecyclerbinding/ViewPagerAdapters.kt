@@ -184,24 +184,8 @@ fun dynamicViewPagerConfig(
     return DynamicViewPagerConfig.DynamicViewPagerConfigBuilder().apply(block).build()
 }
 
-/**
- * Настройки динамического ViewPager'а, используется как обычные ViewPagerSettings,
- * только добавляется getDynamicData (LiveData, при изменении значения которой
- * происходит notifyDataSetChanged у адаптера) и lifecycleOwner (для избежания утечек памяти
- * при обсерве liveDat'ы)
- */
 interface DynamicViewPagerSettings : ViewPagerSettings {
-    /**
-     * Получение LifecycleOwner для обсерва лайвдаты
-     *
-     * @return lifecycleOwner на котором будет обсервиться liveData
-     */
     fun getLifecycleOwner(): LifecycleOwner
-
-    /**
-     * LiveData, которую слушает adapter, при изменении данных в которой происходит
-     * notifyDataSetChanged
-     */
     fun getDynamicData(): LiveData<*>
 }
 
@@ -229,14 +213,6 @@ internal open class ViewPagerAdapter(private val viewPagerSettings: ViewPagerSet
     }
 }
 
-/**
- * Динамический адаптер viewPager'a, для облегчения изменения количества страниц в viewPager,
- * расширяет дефолтный ViewPagerAdapter, позволяет вызывать обновление страниц pager'а, при
- * изменении значения liveDat'ы, переданной в viewPagerSettings
- *
- * @param viewPagerSettings - настройки динамического viewPager'а
- * @see DynamicViewPagerAdapter
- */
 internal class DynamicViewPagerAdapter(
     viewPagerSettings: DynamicViewPagerSettings
 ) : ViewPagerAdapter(viewPagerSettings) {

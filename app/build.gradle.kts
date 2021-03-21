@@ -156,7 +156,8 @@ dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
     implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
-    //implementation(project(":easy-recycler-binding"))
+    implementation(project(":easy-recycler-binding"))
+    //implementation("com.github.Rasalexman:easy-recycler-binding:0.0.3")
 
     implementation(appdependencies.Libs.Core.coreKtx)
     implementation(appdependencies.Libs.Core.constraintlayout)
@@ -164,24 +165,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.navigationUiKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.material)
-    implementation("com.github.rasalexman:easy-recycler-binding:0.0.3")
-
-    /*implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.fragment:fragment-ktx:1.3.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.4'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.4'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0'
-
-    implementation project(':easy-recycler-binding')
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'*/
+    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.3")
 
     testImplementation(Libs.Tests.junit)
     androidTestImplementation(Libs.Tests.runner)
