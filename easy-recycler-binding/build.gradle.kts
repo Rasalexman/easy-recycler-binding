@@ -110,7 +110,7 @@ tasks {
 repositories {
     mavenCentral()
 }
-// comment it if you fork this project
+// comment this apply function if you fork this project
 apply {
     from("deploy.gradle")
 }

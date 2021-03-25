@@ -2,7 +2,7 @@ package appdependencies
 
 object Versions {
 
-    const val gradle = "4.1.2"
+    const val gradle = "4.1.3"
     const val kotlin = "1.4.31"
     const val kotlinGradle = "1.3.6"
     const val google = "4.3.3"

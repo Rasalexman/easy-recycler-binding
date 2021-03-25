@@ -7,7 +7,7 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.databinding.*
 import androidx.lifecycle.LifecycleOwner
-import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -25,9 +25,9 @@ private var customOnPageChangeCallback: CustomPageChangeCallback = CustomPageCha
 
 @BindingAdapter(value = ["items", "vp_config"], requireAll = false)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
-    viewPager: ViewPager2,
-    newItems: List<ItemType>?,
-    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?
+        viewPager: ViewPager2,
+        newItems: List<ItemType>?,
+        dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?
 ) {
     if (dataBindingRecyclerViewConfig == null) {
         return
@@ -74,10 +74,10 @@ fun getSelectedPosition(viewPager: ViewPager2): Int {
 
 @BindingAdapter(value = ["items", "rv_config", "visibleThreshold"], requireAll = false)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
-    recyclerView: RecyclerView,
-    newItems: List<ItemType>?,
-    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
-    visibleThreshold: Int = 5
+        recyclerView: RecyclerView,
+        newItems: List<ItemType>?,
+        dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
+        visibleThreshold: Int = 5
 ) {
 
     if (dataBindingRecyclerViewConfig == null) {
@@ -99,8 +99,8 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     if (recyclerView.adapter == null) {
 
         if (recyclerView.layoutManager == null) {
-            val mLayoutManager: RecyclerView.LayoutManager = dataBindingRecyclerViewConfig.layoutManager ?:
-                LinearLayoutManager(recyclerView.context, dataBindingRecyclerViewConfig.orientation, false)
+            val mLayoutManager: RecyclerView.LayoutManager = dataBindingRecyclerViewConfig.layoutManager
+                    ?: LinearLayoutManager(recyclerView.context, dataBindingRecyclerViewConfig.orientation, false)
             recyclerView.layoutManager = mLayoutManager
 
             dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
@@ -111,9 +111,21 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
                     }
                 })
             }
-        }
-        recyclerView.itemAnimator = DefaultItemAnimator()
 
+            dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
+                recyclerView.clearOnScrollListeners()
+                recyclerView.addOnScrollListener(it)
+            }
+        }
+
+        dataBindingRecyclerViewConfig.itemAnimator?.let {
+            recyclerView.itemAnimator = it
+        }
+
+        dataBindingRecyclerViewConfig.itemDecorator?.let {
+            recyclerView.removeItemDecorationAt(0)
+            recyclerView.addItemDecoration(it, 0)
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             recyclerView.touchscreenBlocksFocus = true
@@ -126,28 +138,29 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         recyclerView.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems!!)
     }
 
+
     val adapter = recyclerView.adapter!!
     applyData(adapter, oldItems, newItems)
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun<ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(items: List<ItemType>): RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder> {
+private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(items: List<ItemType>): RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder> {
     return DataBindingRecyclerAdapter(
-        items = items,
-        lifecycleOwner = this.lifecycleOwner,
-        layoutId = this.layoutId,
-        itemId = this.itemId,
-        realisation = this.realisation,
-        onItemClickListener = this.onItemClickListener,
-        onItemDoubleClickListener = this.onItemDoubleClickListener,
-        onItemLongClickListener = this.onItemLongClickListener
+            items = items,
+            lifecycleOwner = this.lifecycleOwner,
+            layoutId = this.layoutId,
+            itemId = this.itemId,
+            realisation = this.realisation,
+            onItemClickListener = this.onItemClickListener,
+            onItemDoubleClickListener = this.onItemDoubleClickListener,
+            onItemLongClickListener = this.onItemLongClickListener
     )
 }
 
 private fun <ItemType : Any> applyData(
-    adapter: RecyclerView.Adapter<*>,
-    oldItems: MutableList<ItemType>?,
-    newItems: List<ItemType>?
+        adapter: RecyclerView.Adapter<*>,
+        oldItems: MutableList<ItemType>?,
+        newItems: List<ItemType>?
 ) {
     if (oldItems !== newItems) {
         oldItems?.let { old ->
@@ -167,16 +180,19 @@ private fun <ItemType : Any> applyData(
 }
 
 data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
-    val layoutId: Int,
-    val itemId: Int,
-    val orientation: Int = RecyclerView.VERTICAL,
-    val lifecycleOwner: LifecycleOwner? = null,
-    val realisation: DataBindingAdapter<BindingType>? = null,
-    val onItemClickListener: OnRecyclerItemClickListener? = null,
-    val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
-    val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null,
-    val onScrollListener: ((Int) -> Unit)? = null,
-    val layoutManager: RecyclerView.LayoutManager? = null
+        val layoutId: Int,
+        val itemId: Int,
+        val orientation: Int = RecyclerView.VERTICAL,
+        val lifecycleOwner: LifecycleOwner? = null,
+        val realisation: DataBindingAdapter<BindingType>? = null,
+        val onItemClickListener: OnRecyclerItemClickListener? = null,
+        val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
+        val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null,
+        val onScrollListener: ((Int) -> Unit)? = null,
+        val layoutManager: RecyclerView.LayoutManager? = null,
+        val recyclerOnScrollListener: RecyclerView.OnScrollListener? = null,
+        val itemAnimator: RecyclerView.ItemAnimator? = null,
+        val itemDecorator: RecyclerView.ItemDecoration? = null
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -188,59 +204,65 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var orientation: Int = RecyclerView.VERTICAL
         var onItemBind: ((BT, Int) -> Unit)? = null
         var onLoadMore: ((Int) -> Unit)? = null
-        var onItemClick:((I, Int) -> Unit)? = null
+        var onItemClick: ((I, Int) -> Unit)? = null
         var onItemDoubleClicked: ((I, Int) -> Unit)? = null
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
         var layoutManager: RecyclerView.LayoutManager? = null
+        var onScrollListener: RecyclerView.OnScrollListener? = null
+        var itemAnimator: RecyclerView.ItemAnimator? = null
+        var itemDecorator: RecyclerView.ItemDecoration? = null
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
-                layoutId = layoutId ?: -1,
-                itemId = itemId ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
-                lifecycleOwner = lifecycleOwner,
-                orientation = orientation,
-                layoutManager = layoutManager,
-                realisation = object : DataBindingAdapter<BT> {
-                    override fun onCreate(binding: BT) {
-                        onItemCreate?.invoke(binding)
-                    }
+                    layoutId = layoutId ?: -1,
+                    itemId = itemId ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
+                    lifecycleOwner = lifecycleOwner,
+                    orientation = orientation,
+                    layoutManager = layoutManager,
+                    recyclerOnScrollListener = onScrollListener,
+                    itemAnimator = itemAnimator,
+                    itemDecorator = itemDecorator,
+                    realisation = object : DataBindingAdapter<BT> {
+                        override fun onCreate(binding: BT) {
+                            onItemCreate?.invoke(binding)
+                        }
 
-                    override fun onBind(binding: BT, position: Int) {
-                        onItemBind?.invoke(binding, position)
-                    }
+                        override fun onBind(binding: BT, position: Int) {
+                            onItemBind?.invoke(binding, position)
+                        }
 
-                    override fun onUnbind(binding: BT) {
-                        onItemUnbind?.invoke(binding)
-                    }
-                },
-                onItemClickListener = object : OnRecyclerItemClickListener {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : Any> onItemClicked(item: T, position: Int) {
-                        val selectedItem = item as? I
-                        selectedItem?.let {
-                            onItemClick?.invoke(it, position)
+                        override fun onUnbind(binding: BT) {
+                            onItemUnbind?.invoke(binding)
                         }
-                    }
-                },
-                onItemDoubleClickListener = object : OnRecyclerItemDoubleClickListener {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : Any> onItemDoubleClicked(item: T, position: Int) {
-                        val selectedItem = item as? I
-                        selectedItem?.let {
-                            onItemDoubleClicked?.invoke(it, position)
+                    },
+                    onItemClickListener = object : OnRecyclerItemClickListener {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : Any> onItemClicked(item: T, position: Int) {
+                            val selectedItem = item as? I
+                            selectedItem?.let {
+                                onItemClick?.invoke(it, position)
+                            }
                         }
-                    }
-                },
-                onItemLongClickListener = object : OnRecyclerItemLongClickListener {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : Any> onItemLongClicked(item: T, position: Int) {
-                        val selectedItem = item as? I
-                        selectedItem?.let {
-                            onItemLongClickListener?.invoke(it, position)
+                    },
+                    onItemDoubleClickListener = object : OnRecyclerItemDoubleClickListener {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : Any> onItemDoubleClicked(item: T, position: Int) {
+                            val selectedItem = item as? I
+                            selectedItem?.let {
+                                onItemDoubleClicked?.invoke(it, position)
+                            }
                         }
-                    }
-                },
-                onScrollListener = onLoadMore
+                    },
+                    onItemLongClickListener = object : OnRecyclerItemLongClickListener {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : Any> onItemLongClicked(item: T, position: Int) {
+                            val selectedItem = item as? I
+                            selectedItem?.let {
+                                onItemLongClickListener?.invoke(it, position)
+                            }
+                        }
+                    },
+                    onScrollListener = onLoadMore
             )
         }
     }
@@ -255,16 +277,16 @@ inline fun recyclerMultiConfig(block: DataBindingRecyclerViewConfig.DataBindingR
 }
 
 class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
-    private val items: List<ItemType>,
-    private val layoutId: Int,
-    private val itemId: Int,
-    private val lifecycleOwner: LifecycleOwner? = null,
-    private val realisation: DataBindingAdapter<BindingType>? = null,
-    private val onItemClickListener: OnRecyclerItemClickListener? = null,
-    private val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
-    private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
+        private val items: List<ItemType>,
+        private val layoutId: Int,
+        private val itemId: Int,
+        private val lifecycleOwner: LifecycleOwner? = null,
+        private val realisation: DataBindingAdapter<BindingType>? = null,
+        private val onItemClickListener: OnRecyclerItemClickListener? = null,
+        private val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
+        private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
 ) : RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder>(),
-    DataBindingAdapter<BindingType> {
+        DataBindingAdapter<BindingType> {
 
 
     override fun getItemCount(): Int {

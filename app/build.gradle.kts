@@ -157,7 +157,6 @@ dependencies {
     implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
     implementation(project(":easy-recycler-binding"))
-    //implementation("com.github.Rasalexman:easy-recycler-binding:0.0.3")
 
     implementation(appdependencies.Libs.Core.coreKtx)
     implementation(appdependencies.Libs.Core.constraintlayout)
@@ -165,7 +164,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.navigationUiKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.material)
-    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.3")
+    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
     testImplementation(Libs.Tests.junit)
     androidTestImplementation(Libs.Tests.runner)
