@@ -7,9 +7,7 @@ buildscript {
         google()
         jcenter()
         mavenCentral()
-        maven { url = uri(  "https://dl.bintray.com/sphc/EasyRecyclerBinding") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://dl.bintray.com/kotlin/dokka") }
 
     }
     dependencies {
@@ -18,9 +16,8 @@ buildscript {
 
         classpath(appdependencies.ClassPath.google)
         classpath(appdependencies.ClassPath.navisafe)
-        classpath(appdependencies.ClassPath.bintrayplugin)
         classpath(appdependencies.ClassPath.mavenplugin)
-        classpath(appdependencies.ClassPath.dokkaplugin)
+        //classpath(appdependencies.ClassPath.dokkaplugin)
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -31,11 +28,8 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        maven { url = uri(  "https://dl.bintray.com/sphc/EasyRecyclerBinding") }
         maven { url = uri("https://www.jitpack.io") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://dl.bintray.com/kotlin/dokka") }
-        maven { url = uri("https://dl.bintray.com/sphc/Sticky") }
     }
 }
 

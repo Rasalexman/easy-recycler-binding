@@ -189,8 +189,9 @@ interface DynamicViewPagerSettings : ViewPagerSettings {
     fun getDynamicData(): LiveData<*>
 }
 
-internal open class ViewPagerAdapter(private val viewPagerSettings: ViewPagerSettings) :
-    PagerAdapter() {
+internal open class ViewPagerAdapter(
+    private val viewPagerSettings: ViewPagerSettings
+    ) : PagerAdapter() {
 
     override fun getCount(): Int = viewPagerSettings.countTab()
 

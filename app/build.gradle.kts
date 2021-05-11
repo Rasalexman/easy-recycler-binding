@@ -118,11 +118,6 @@ android {
 
     tasks.withType<KotlinCompile>().all {
         kotlinOptions.suppressWarnings = true
-        kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.noReflect = true
-        kotlinOptions.freeCompilerArgs += listOf(
-                "-XXLanguage:+InlineClasses"
-        )
     }
 
     packagingOptions {
@@ -154,7 +149,7 @@ kapt {
 dependencies {
 
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+    implementation(kotlin("stdlib", Versions.kotlin))
 
     implementation(project(":easy-recycler-binding"))
 

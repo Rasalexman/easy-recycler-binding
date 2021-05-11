@@ -7,7 +7,6 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.databinding.*
 import androidx.lifecycle.LifecycleOwner
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -118,15 +117,6 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             }
         }
 
-        dataBindingRecyclerViewConfig.itemAnimator?.let {
-            recyclerView.itemAnimator = it
-        }
-
-        dataBindingRecyclerViewConfig.itemDecorator?.let {
-            recyclerView.removeItemDecorationAt(0)
-            recyclerView.addItemDecoration(it, 0)
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             recyclerView.touchscreenBlocksFocus = true
         }
@@ -141,6 +131,19 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
     val adapter = recyclerView.adapter!!
     applyData(adapter, oldItems, newItems)
+
+    dataBindingRecyclerViewConfig.itemAnimator?.let {
+        if(newItems != null) {
+            recyclerView.itemAnimator = it
+        }
+    }
+
+    dataBindingRecyclerViewConfig.itemDecorator?.let {
+        if(recyclerView.itemDecorationCount > 0) {
+            recyclerView.removeItemDecorationAt(0)
+        }
+        recyclerView.addItemDecoration(it, 0)
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -285,13 +288,9 @@ class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         private val onItemClickListener: OnRecyclerItemClickListener? = null,
         private val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
         private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
-) : RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder>(),
-        DataBindingAdapter<BindingType> {
+) : RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder>(), DataBindingAdapter<BindingType> {
 
-
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
     override fun getItemViewType(position: Int): Int {
         return (items.getOrNull(position) as? IBindingModel)?.layoutResId ?: layoutId
@@ -328,11 +327,12 @@ class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
 
     @Suppress("UNCHECKED_CAST")
     override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
+        val absolutePosition = holder.absoluteAdapterPosition
         if (itemId != -1) {
-            holder.binding.setVariable(itemId, items[holder.absoluteAdapterPosition])
+            holder.binding.setVariable(itemId, items[absolutePosition])
             holder.binding.lifecycleOwner = lifecycleOwner
         }
-        onBind(holder.binding as BindingType, holder.absoluteAdapterPosition)
+        onBind(holder.binding as BindingType, absolutePosition)
         holder.binding.executePendingBindings()
     }
 

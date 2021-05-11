@@ -1,16 +1,10 @@
 import appdependencies.Versions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
-import org.jetbrains.dokka.gradle.DokkaTask
 import resources.Resources.codeDirs
 
 plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("kapt")
-
-    id("com.jfrog.bintray")
-    id("org.jetbrains.dokka")
     id("maven-publish")
 }
 
@@ -42,12 +36,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    tasks.withType<KotlinCompile>().all {
-        kotlinOptions.suppressWarnings = true
-        kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.noReflect = true
     }
 
     packagingOptions {
@@ -84,7 +72,7 @@ kapt {
 
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+    implementation(kotlin("stdlib", Versions.kotlin))
 
     implementation(appdependencies.Libs.Core.coreKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
@@ -92,7 +80,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.recyclerView)
 }
 
-tasks {
+/*tasks {
     val dokka by getting(DokkaTask::class) {
         outputFormat = "html"
         outputDirectory = "$buildDir/dokka"
@@ -105,12 +93,43 @@ tasks {
             }
         }
     }
+}*/
+
+group = "com.rasalexman.easyrecyclerbinding"
+version = appdependencies.Builds.ERB.VERSION_NAME
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-repositories {
-    mavenCentral()
-}
-// comment this apply function if you fork this project
-apply {
-    from("deploy.gradle")
+afterEvaluate {
+
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = "com.rasalexman.easyrecyclerbinding"
+                artifactId = "easyrecyclerbinding"
+                version = appdependencies.Builds.ERB.VERSION_NAME
+            }
+            create<MavenPublication>("debug") {
+                from(components["debug"])
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = "com.rasalexman.easyrecyclerbinding"
+                artifactId = "easyrecyclerbinding-debug"
+                version = appdependencies.Builds.ERB.VERSION_NAME
+            }
+        }
+
+        repositories {
+            maven {
+                name = "easyrecyclerbinding"
+                url = uri("${buildDir}/publishing-repository")
+            }
+        }
+    }
 }

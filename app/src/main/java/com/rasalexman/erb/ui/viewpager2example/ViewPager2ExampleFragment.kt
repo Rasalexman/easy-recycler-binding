@@ -22,6 +22,9 @@ class ViewPager2ExampleFragment : BaseBindingFragment<Vp2ExampleFragmentBinding,
 
         binding.vpConfig = createRecyclerMultiConfig {
             itemId = BR.vm
+            onItemCreate = {
+                it.setVariable(BR.vm, secondPageViewModel)
+            }
         }
     }
 }
