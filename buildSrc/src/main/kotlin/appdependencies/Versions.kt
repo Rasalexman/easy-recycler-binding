@@ -10,7 +10,7 @@ object Versions {
     const val maven = "2.1"
 
     const val appCoreX = "1.3.2"
-    const val constraintLayout = "1.1.3"
+    const val constraintLayout = "2.0.4"
     const val navisafe = "2.3.5"
     const val material = "1.3.0"
     const val viewPager2 = "1.0.0"
