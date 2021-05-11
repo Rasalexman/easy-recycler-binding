@@ -1,7 +1,7 @@
 # easy-recycler-binding
 ERB is an library with some useful Kotlin Android data bindings adapters for RecyclerView, ViewPager and ViewPager2 with multiply ViewHolders view
 
-[ ![Kotlin 1.4.31](https://img.shields.io/badge/Kotlin-1.4.31-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/sphc/EasyRecyclerBinding/easyrecyclerbinding/images/download.svg?version=0.0.3) ](https://bintray.com/sphc/EasyRecyclerBinding/easyrecyclerbinding/0.0.3/link) [![](https://jitpack.io/v/Rasalexman/easy-recycler-binding.svg)](https://jitpack.io/#Rasalexman/easy-recycler-binding)
+[ ![Kotlin 1.5.0](https://img.shields.io/badge/Kotlin-1.5.0-blue.svg)](http://kotlinlang.org) [![](https://jitpack.io/v/Rasalexman/easy-recycler-binding.svg)](https://jitpack.io/#Rasalexman/easy-recycler-binding)
 
 How to use with RecyclerView:
 1) Add to you layout xml file your variable for viewModel and `DataBindingRecyclerViewConfig`
@@ -78,24 +78,21 @@ See simple app project for more examples with ViewPager and ViewPager2
 	
 
 First of all add repository to your project gradle file
-`maven { url 'https://dl.bintray.com/sphc/EasyRecyclerBinding' }`
+```
+allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+	```
 
 App Gradle:
 ```
 // Standart Library
-implementation 'com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:x.y.z'
+implementation 'com.github.Rasalexman:easy-recycler-binding:x.y.z'
 ```
 
-Maven:
-```
-// Main Library
-<dependency>
-	<groupId>com.rasalexman.easyrecyclerbinding</groupId>
-	<artifactId>easyrecyclerbinding</artifactId>
-	<version>x.y.z</version>
-	<type>pom</type>
-</dependency>
-```
 
 
 License
