@@ -10,12 +10,12 @@ buildscript {
 
     }
     dependencies {
-        classpath(ClassPath.gradle)
-        classpath(ClassPath.kotlingradle)
+        classpath(appdependencies.ClassPath.gradle)
+        classpath(appdependencies.ClassPath.kotlingradle)
 
-        classpath(ClassPath.google)
-        classpath(ClassPath.navisafe)
-        classpath(ClassPath.mavenplugin)
+        classpath(appdependencies.ClassPath.google)
+        classpath(appdependencies.ClassPath.navisafe)
+        classpath(appdependencies.ClassPath.mavenplugin)
         //classpath(appdependencies.ClassPath.dokkaplugin)
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
