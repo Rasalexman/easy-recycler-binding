@@ -20,9 +20,18 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
             layoutId = R.layout.item_recycler
             itemId = BR.item
             onItemClick = { item: IBindingModel, pos: Int ->
-                Log.d("ITEM_POSITION", "Position = $pos")
-                Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show()
+                Log.d("onItemClick", "Position = $pos")
+                Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
             }
+            onItemLongClickListener = { item: IBindingModel, pos: Int ->
+                Log.d("onItemLongClickListener", "Position = $pos")
+                Toast.makeText(context, "onItemLongClickListener", Toast.LENGTH_SHORT).show()
+            }
+            onItemDoubleClicked = { item: IBindingModel, pos: Int ->
+                Log.d("onItemDoubleClicked", "Position = $pos")
+                Toast.makeText(context, "onItemDoubleClicked", Toast.LENGTH_SHORT).show()
+            }
+
             onLoadMore = {
                 viewModel.createItems()
             }

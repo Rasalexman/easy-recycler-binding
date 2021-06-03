@@ -1,5 +1,7 @@
 package com.rasalexman.easyrecyclerbinding
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,4 +74,15 @@ fun Fragment.createRecyclerMultiConfig(
     block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit
 ): DataBindingRecyclerViewConfig<ViewDataBinding> {
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>().also { it.lifecycleOwner = viewLifecycleOwner }.apply(block).build()
+}
+
+/**
+ * Inline function to retrieve [Context] owners
+ */
+inline fun <reified T> Context.getOwner(): T {
+    var context: Context = this
+    while (context !is T) {
+        context = (context as ContextWrapper).baseContext
+    }
+    return context
 }
