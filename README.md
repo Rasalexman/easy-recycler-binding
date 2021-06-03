@@ -85,12 +85,12 @@ allprojects {
 			maven { url 'https://jitpack.io' }
 		}
 	}
-	```
+```
 
 App Gradle:
 ```
 // Standart Library
-implementation 'com.github.Rasalexman:easy-recycler-binding:x.y.z'
+implementation 'com.github.Rasalexman.easy-recycler-binding:easyrecyclerbinding:x.y.z'
 ```
 
 
