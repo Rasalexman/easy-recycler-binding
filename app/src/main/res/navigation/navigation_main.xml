@@ -37,4 +37,20 @@
         android:name="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleFragment"
         android:label="ViewPager2ExampleFragment" />
 
+    <fragment
+        android:id="@+id/selectedFragment"
+        android:name="com.rasalexman.erb.ui.selected.SelectedFragment"
+        android:label="SelectedFragment">
+
+        <argument
+            android:name="selectedItem"
+            app:nullable="false"
+            app:argType="string"/>
+    </fragment>
+
+    <action
+        android:id="@+id/showSelectedFragment"
+        app:destination="@+id/selectedFragment"/>
+
+
 </navigation>

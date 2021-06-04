@@ -4,9 +4,9 @@ import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.erb.R
 
 data class RecyclerItemUI2(
-    val id: String,
-    val title: String
-) : IBindingModel {
+    override val id: String,
+    override val title: String
+) : IBindingModel, IRecyclerItem {
     override val layoutResId: Int
         get() = R.layout.item_recycler2
 }

@@ -8,8 +8,10 @@ import com.rasalexman.erb.models.RecyclerItemUI2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.random.Random
 
 abstract class BaseItemsViewModel : BasePagesViewModel() {
+
     open val items: MutableLiveData<MutableList<IBindingModel>> = MutableLiveData()
 
     init {
@@ -18,28 +20,29 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
 
     fun createItems() {
         viewModelScope.launch(Dispatchers.IO) {
-            val itemsList = mutableListOf<IBindingModel>()
             val existedList = items.value ?: mutableListOf()
-            val itemsCount = existedList.size
-            repeat(100) {
-                itemsList.add(itemsCreator(itemsCount, it))
+            if(existedList.isEmpty()) {
+                val itemsList = mutableListOf<IBindingModel>()
+                val itemCounts = Random.nextInt(20, 100)
+                repeat(itemCounts) {
+                    itemsList.add(itemsCreator(it))
+                }
+                existedList.addAll(itemsList)
+                items.postValue(existedList)
             }
-            existedList.addAll(itemsList)
-            items.postValue(existedList)
         }
     }
 
-    private fun itemsCreator(itemsCount: Int, position: Int): IBindingModel {
-        val nextPositionNumber = itemsCount + position
-        val nextId = UUID.randomUUID().toString()
+    protected open fun itemsCreator(position: Int): IBindingModel {
+        val nextId = Random.nextInt(100, 100000).toString()
         return if (position % 2 == 0) {
             RecyclerItemUI(
-                    title = "This is a title number $nextPositionNumber",
+                    title = UUID.randomUUID().toString().take(14),
                     id = nextId
             )
         } else {
             RecyclerItemUI2(
-                    title = "This is a title number $nextPositionNumber",
+                    title = UUID.randomUUID().toString().take(20),
                     id = nextId
             )
         }

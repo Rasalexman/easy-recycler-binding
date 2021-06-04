@@ -5,14 +5,12 @@ import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.databinding.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import java.util.*
 
 class CustomPageChangeCallback : ViewPager2.OnPageChangeCallback() {
     var onPageChangedCallback: (() -> Unit)? = null
@@ -63,14 +61,13 @@ fun setSelectedPosition(
     selectedPage: Int?,
     changeListener: InverseBindingListener?
 ) {
-    selectedPage?.let {
-        viewPager.setCurrentItem(it, false)
-        customOnPageChangeCallback.onPageChangedCallback = {
-            changeListener?.onChange()
-        }
-        viewPager.unregisterOnPageChangeCallback(customOnPageChangeCallback)
-        viewPager.registerOnPageChangeCallback(customOnPageChangeCallback)
+    val currentPage = selectedPage ?: 0
+    viewPager.setCurrentItem(currentPage, false)
+    customOnPageChangeCallback.onPageChangedCallback = {
+        changeListener?.onChange()
     }
+    viewPager.unregisterOnPageChangeCallback(customOnPageChangeCallback)
+    viewPager.registerOnPageChangeCallback(customOnPageChangeCallback)
 }
 
 @InverseBindingAdapter(attribute = "selectedPage", event = "positionAttrChanged")
@@ -170,6 +167,8 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
         lifecycleOwner = this.lifecycleOwner,
         layoutId = this.layoutId,
         itemId = this.itemId,
+        doubleClickDelayTime = this.doubleClickDelayTime,
+        consumeLongClick = this.consumeLongClick,
         realisation = this.realisation,
         onItemClickListener = this.onItemClickListener,
         onItemDoubleClickListener = this.onItemDoubleClickListener,
@@ -204,6 +203,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val itemId: Int,
     val orientation: Int = RecyclerView.VERTICAL,
     val consumeLongClick: Boolean = true,
+    val doubleClickDelayTime: Long = 150L,
     val clickDebounceInterval: Long = 400L,
     val lifecycleOwner: LifecycleOwner? = null,
     val realisation: DataBindingAdapter<BindingType>? = null,
@@ -220,6 +220,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
         var layoutId: Int? = null
         var itemId: Int? = null
+        var doubleClickDelayTime: Long = 150L
         var consumeLongClick: Boolean = true
         var lifecycleOwner: LifecycleOwner? = null
         var onItemCreate: ((BT) -> Unit)? = null
@@ -242,6 +243,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                     ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
                 lifecycleOwner = lifecycleOwner,
                 orientation = orientation,
+                doubleClickDelayTime = doubleClickDelayTime,
                 consumeLongClick = consumeLongClick,
                 layoutManager = layoutManager,
                 recyclerOnScrollListener = onScrollListener,
@@ -322,6 +324,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     private val items: List<ItemType>,
     private val layoutId: Int,
     private val itemId: Int,
+    private val doubleClickDelayTime: Long = 150L,
     private val consumeLongClick: Boolean = true,
     private val lifecycleOwner: LifecycleOwner? = null,
     private val realisation: DataBindingAdapter<BindingType>? = null,
@@ -348,6 +351,8 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
         val result = BindingViewHolder(binding)
 
         val clickListener = object : ViewClickersListener(
+            hasDoubleClickListener = onItemDoubleClickListener != null,
+            doubleClickDelayTime = doubleClickDelayTime,
             consumeLongClick = consumeLongClick
         ) {
 
@@ -420,12 +425,22 @@ interface DataBindingAdapter<BindingType : ViewDataBinding> {
 }
 
 abstract class ViewClickersListener(
+    private val hasDoubleClickListener: Boolean,
+    private val doubleClickDelayTime: Long,
     private val consumeLongClick: Boolean = true
 ) : View.OnClickListener, View.OnLongClickListener {
 
     private var lastClickCount: Int = 0
 
     override fun onClick(v: View) {
+        if(hasDoubleClickListener) {
+            processDoubleClick()
+        } else {
+            onSingleClicked()
+        }
+    }
+
+    private fun processDoubleClick() {
         if (lastClickCount == 0) {
             lastClickCount++
             Handler(Looper.getMainLooper()).postDelayed({
@@ -435,7 +450,7 @@ abstract class ViewClickersListener(
                     onDoubleClicked()
                 }
                 lastClickCount = 0
-            }, DOUBLE_CLICK_TIME_DELTA)
+            }, doubleClickDelayTime)
         } else {
             lastClickCount++
         }
@@ -452,10 +467,6 @@ abstract class ViewClickersListener(
     abstract fun onSingleClicked()
 
     abstract fun onDoubleClicked()
-
-    companion object {
-        private val DOUBLE_CLICK_TIME_DELTA by lazy { ViewConfiguration.getDoubleTapTimeout().toLong() }
-    }
 }
 
 interface OnRecyclerItemClickListener {

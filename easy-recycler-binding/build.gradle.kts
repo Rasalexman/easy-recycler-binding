@@ -80,21 +80,6 @@ dependencies {
     implementation(appdependencies.Libs.Core.recyclerView)
 }
 
-/*tasks {
-    val dokka by getting(DokkaTask::class) {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/dokka"
-        configuration {
-            externalDocumentationLink {
-                noJdkLink = true
-                noAndroidSdkLink = true
-                noStdlibLink = true
-                packageListUrl = URL("https://kotlinlang.org/api/latest/jvm/stdlib/package-list")
-            }
-        }
-    }
-}*/
-
 group = "com.rasalexman.easyrecyclerbinding"
 version = appdependencies.Builds.ERB.VERSION_NAME
 

@@ -7,7 +7,7 @@
 
         <variable
             name="item"
-            type="com.rasalexman.erb.models.RecyclerItemUI2" />
+            type="com.rasalexman.erb.models.IRecyclerItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
