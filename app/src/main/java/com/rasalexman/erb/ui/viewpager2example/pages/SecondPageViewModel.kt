@@ -25,7 +25,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         }
     }
 
-    override fun itemsCreator(position: Int): IBindingModel {
+    override fun itemsCreator(position: Int): Any {
         return SimpleRecyclerItemUI(
             title = UUID.randomUUID().toString().take(14),
             id = Random.nextInt(100, 100000).toString()

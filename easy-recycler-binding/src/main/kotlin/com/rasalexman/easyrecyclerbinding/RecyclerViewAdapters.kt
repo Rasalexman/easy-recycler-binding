@@ -312,7 +312,11 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
 
 inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit): DataBindingRecyclerViewConfig<BT> {
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
-        .build()
+        .build().also {
+            if(it.layoutId == -1) {
+                throw IllegalStateException("layoutId is not set for viewHolders adapter")
+            }
+        }
 }
 
 inline fun recyclerMultiConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit): DataBindingRecyclerViewConfig<ViewDataBinding> {
@@ -337,7 +341,8 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     override fun getItemCount(): Int = items.size
 
     override fun getItemViewType(position: Int): Int {
-        return (items.getOrNull(position) as? IBindingModel)?.layoutResId ?: layoutId
+        val viewType = layoutId.takeIf { it != -1 } ?: (items.getOrNull(position) as? IBindingModel)?.layoutResId
+        return viewType ?: throw IllegalStateException("layoutId is not set for viewHolder with item data ${items.getOrNull(position)} ")
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {

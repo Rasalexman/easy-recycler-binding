@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 abstract class BaseItemsViewModel : BasePagesViewModel() {
 
-    open val items: MutableLiveData<MutableList<IBindingModel>> = MutableLiveData()
+    open val items: MutableLiveData<MutableList<Any>> = MutableLiveData()
 
     init {
         createItems()
@@ -22,7 +22,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val existedList = items.value ?: mutableListOf()
             if(existedList.isEmpty()) {
-                val itemsList = mutableListOf<IBindingModel>()
+                val itemsList = mutableListOf<Any>()
                 val itemCounts = Random.nextInt(20, 100)
                 repeat(itemCounts) {
                     itemsList.add(itemsCreator(it))
@@ -33,7 +33,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         }
     }
 
-    protected open fun itemsCreator(position: Int): IBindingModel {
+    protected open fun itemsCreator(position: Int): Any {
         val nextId = Random.nextInt(100, 100000).toString()
         return if (position % 2 == 0) {
             RecyclerItemUI(
