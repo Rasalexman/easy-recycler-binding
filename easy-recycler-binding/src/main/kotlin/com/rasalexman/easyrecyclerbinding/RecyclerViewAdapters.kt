@@ -11,6 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import java.lang.ref.WeakReference
+import java.util.*
 
 class CustomPageChangeCallback : ViewPager2.OnPageChangeCallback() {
     var onPageChangedCallback: (() -> Unit)? = null
@@ -21,9 +23,12 @@ class CustomPageChangeCallback : ViewPager2.OnPageChangeCallback() {
     }
 }
 
-private var customOnPageChangeCallback: CustomPageChangeCallback = CustomPageChangeCallback()
+val changeCallbackMap = WeakHashMap<String, CustomPageChangeCallback>(3)
 
-@BindingAdapter(value = ["items", "vp_config"], requireAll = false)
+@BindingAdapter(
+    value = ["items", "vp_config"],
+    requireAll = false
+)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
     viewPager: ViewPager2,
     newItems: List<ItemType>?,
@@ -50,6 +55,12 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
             viewPager.defaultFocusHighlightEnabled = false
         }
         viewPager.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems!!)
+
+        val callbackKey = viewPager.hashCode().toString()
+        val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
+            CustomPageChangeCallback()
+        }
+        viewPager.registerOnPageChangeCallback(lastCallback)
     }
 
     applyData(viewPager.adapter!!, oldItems, newItems)
@@ -62,12 +73,16 @@ fun setSelectedPosition(
     changeListener: InverseBindingListener?
 ) {
     val currentPage = selectedPage ?: 0
-    viewPager.setCurrentItem(currentPage, false)
-    customOnPageChangeCallback.onPageChangedCallback = {
+    val lastPage = viewPager.currentItem
+    if(currentPage != lastPage && currentPage >= 0) {
+        viewPager.setCurrentItem(currentPage, false)
+    }
+
+    val callbackKey = viewPager.hashCode().toString()
+    val pageChangeCallback = changeCallbackMap[callbackKey]
+    pageChangeCallback?.onPageChangedCallback = {
         changeListener?.onChange()
     }
-    viewPager.unregisterOnPageChangeCallback(customOnPageChangeCallback)
-    viewPager.registerOnPageChangeCallback(customOnPageChangeCallback)
 }
 
 @InverseBindingAdapter(attribute = "selectedPage", event = "positionAttrChanged")
@@ -251,16 +266,28 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 itemDecorator = itemDecorator,
                 realisation = object : DataBindingAdapter<BT> {
 
+                    private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
+
+                    private fun getLifecycleOwner(view: View): LifecycleOwner {
+                        return parentFragmentLifecycleOwner?.get() ?: let {
+                            view.context.getOwner<LifecycleOwner>().apply {
+                                parentFragmentLifecycleOwner = WeakReference(this)
+                            }
+                        }
+                    }
+
                     private fun setupLifecycleOwner(binding: BT) {
                         if (lifecycleOwner == null) {
                             if (binding.lifecycleOwner == null) {
                                 val parentOwner = try {
-                                    binding.root.context.getOwner<LifecycleOwner>()
+                                    getLifecycleOwner(binding.root)
                                 } catch (e: Exception) {
                                     null
                                 }
                                 binding.lifecycleOwner = parentOwner
                             }
+                        } else {
+                            binding.lifecycleOwner = lifecycleOwner
                         }
                     }
 
@@ -313,7 +340,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
 inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit): DataBindingRecyclerViewConfig<BT> {
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
         .build().also {
-            if(it.layoutId == -1) {
+            if (it.layoutId == -1) {
                 throw IllegalStateException("layoutId is not set for viewHolders adapter")
             }
         }
@@ -341,8 +368,15 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     override fun getItemCount(): Int = items.size
 
     override fun getItemViewType(position: Int): Int {
-        val viewType = layoutId.takeIf { it != -1 } ?: (items.getOrNull(position) as? IBindingModel)?.layoutResId
-        return viewType ?: throw IllegalStateException("layoutId is not set for viewHolder with item data ${items.getOrNull(position)} ")
+        val viewType = layoutId.takeIf { it != -1 }
+            ?: (items.getOrNull(position) as? IBindingModel)?.layoutResId
+        return viewType ?: throw IllegalStateException(
+            "layoutId is not set for viewHolder with item data ${
+                items.getOrNull(
+                    position
+                )
+            } "
+        )
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
@@ -438,7 +472,7 @@ abstract class ViewClickersListener(
     private var lastClickCount: Int = 0
 
     override fun onClick(v: View) {
-        if(hasDoubleClickListener) {
+        if (hasDoubleClickListener) {
             processDoubleClick()
         } else {
             onSingleClicked()

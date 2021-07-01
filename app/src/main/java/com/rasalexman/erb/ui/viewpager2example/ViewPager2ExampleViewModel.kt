@@ -6,5 +6,6 @@ import com.rasalexman.erb.ui.base.BasePagesViewModel
 
 class ViewPager2ExampleViewModel : BasePagesViewModel() {
 
+    override val selectedPage: MutableLiveData<Int> = MutableLiveData(1)
     val items: MutableLiveData<List<IBindingModel>> = MutableLiveData()
 }

@@ -29,7 +29,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pageSelectionListener="@{vm}"
-            app:tabPosition="@={vm.selectedTab}"
+            app:tabPosition="@={vm.selectedPage}"
             app:vp_settings="@{viewPagerSettings}">
 
             <com.google.android.material.tabs.TabLayout

@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import com.rasalexman.easyrecyclerbinding.PageSelectionListener
 
 abstract class BasePagesViewModel : BaseViewModel(), PageSelectionListener {
-    val selectedTab: MutableLiveData<Int> = MutableLiveData()
+    open val selectedPage: MutableLiveData<Int> = MutableLiveData(0)
 
     override fun onPageSelected(position: Int) {
-        Log.d(TAG_PAGE_SELECT, "Selected ViewPager tab = ${selectedTab.value}")
+        Log.d(TAG_PAGE_SELECT, "Selected ViewPager tab = ${selectedPage.value}")
     }
 
     companion object {

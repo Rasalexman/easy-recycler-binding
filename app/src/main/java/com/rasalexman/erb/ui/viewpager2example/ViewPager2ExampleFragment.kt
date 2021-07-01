@@ -1,6 +1,7 @@
 package com.rasalexman.erb.ui.viewpager2example
 
 import androidx.fragment.app.viewModels
+import com.rasalexman.easyrecyclerbinding.changeCallbackMap
 import com.rasalexman.easyrecyclerbinding.createRecyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
@@ -38,5 +39,15 @@ class ViewPager2ExampleFragment : BasePagerBindingFragment<Vp2ExampleFragmentBin
         binding.vpConfig = createRecyclerMultiConfig {
             itemId = BR.vm
         }
+    }
+
+    override fun onDestroyView() {
+        val callbackKey = binding?.viewpager2.hashCode().toString()
+        changeCallbackMap[callbackKey]?.let {
+            it.onPageChangedCallback = null
+            binding?.viewpager2?.unregisterOnPageChangeCallback(it)
+            changeCallbackMap.remove(callbackKey)
+        }
+        super.onDestroyView()
     }
 }

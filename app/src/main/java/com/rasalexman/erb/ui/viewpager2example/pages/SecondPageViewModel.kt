@@ -2,7 +2,6 @@ package com.rasalexman.erb.ui.viewpager2example.pages
 
 import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.easyrecyclerbinding.recyclerConfig
-import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
 import com.rasalexman.erb.databinding.ItemRecyclerBinding
@@ -25,7 +24,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         }
     }
 
-    override fun itemsCreator(position: Int): Any {
+    override suspend fun itemsCreator(position: Int): Any {
         return SimpleRecyclerItemUI(
             title = UUID.randomUUID().toString().take(14),
             id = Random.nextInt(100, 100000).toString()

@@ -39,7 +39,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tabLayout"
             app:items="@{vm.items}"
-            app:selectedPage="@={vm.selectedTab}"
+            app:selectedPage="@={vm.selectedPage}"
             app:vp_config="@{vpConfig}">
 
         </androidx.viewpager2.widget.ViewPager2>

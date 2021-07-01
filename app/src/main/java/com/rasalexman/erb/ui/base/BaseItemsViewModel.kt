@@ -7,6 +7,7 @@ import com.rasalexman.erb.models.RecyclerItemUI
 import com.rasalexman.erb.models.RecyclerItemUI2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.random.Random
 
@@ -19,21 +20,23 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
     }
 
     fun createItems() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val existedList = items.value ?: mutableListOf()
             if(existedList.isEmpty()) {
                 val itemsList = mutableListOf<Any>()
-                val itemCounts = Random.nextInt(20, 100)
-                repeat(itemCounts) {
-                    itemsList.add(itemsCreator(it))
+                withContext(Dispatchers.IO) {
+                    val itemCounts = Random.nextInt(20, 100)
+                    repeat(itemCounts) {
+                        itemsList.add(itemsCreator(it))
+                    }
+                    existedList.addAll(itemsList)
+                    items.postValue(existedList)
                 }
-                existedList.addAll(itemsList)
-                items.postValue(existedList)
             }
         }
     }
 
-    protected open fun itemsCreator(position: Int): Any {
+    protected open suspend fun itemsCreator(position: Int): Any {
         val nextId = Random.nextInt(100, 100000).toString()
         return if (position % 2 == 0) {
             RecyclerItemUI(
