@@ -1,5 +1,6 @@
 package com.rasalexman.easyrecyclerbinding
 
+import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -449,6 +450,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     DataBindingAdapter<BindingType>, ItemsBinderAdapter<ItemType> {
 
     private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
+    private var layoutInflater: WeakReference<LayoutInflater>? = null
 
     override fun getItemCount(): Int = items.size
 
@@ -479,9 +481,16 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
             }
     }
 
+    private fun getLayoutInflater(context: Context): LayoutInflater {
+        return layoutInflater?.get() ?: LayoutInflater.from(context).apply {
+            layoutInflater = WeakReference(this)
+        }
+    }
+
     private fun setupLifecycleOwner(binding: BindingType) {
+        val bindingLifecycleOwner = binding.lifecycleOwner
         if (lifecycleOwner == null) {
-            if (binding.lifecycleOwner == null) {
+            if (bindingLifecycleOwner == null) {
                 val parentOwner = try {
                     getLifecycleOwner(binding.root)
                 } catch (e: Exception) {
@@ -490,13 +499,15 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
                 binding.lifecycleOwner = parentOwner
             }
         } else {
-            binding.lifecycleOwner = lifecycleOwner
+            if (bindingLifecycleOwner == null) {
+                binding.lifecycleOwner = lifecycleOwner
+            }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
         val binding = DataBindingUtil.inflate<BindingType>(
-            LayoutInflater.from(parent.context),
+            getLayoutInflater(parent.context),
             viewType,
             parent,
             false
@@ -528,7 +539,6 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
             }
         }
 
-        holder.binding.executePendingBindings()
         binding.root.apply {
             if (onItemClickListener != null || onItemDoubleClickListener != null) {
                 setOnClickListener(clickListener)
@@ -537,6 +547,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
                 setOnLongClickListener(clickListener)
             }
         }
+        holder.binding.executePendingBindings()
         return holder
     }
 
