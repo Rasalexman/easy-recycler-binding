@@ -12,6 +12,12 @@ object Libs {
         const val material = "com.google.android.material:material:${Versions.material}"
         const val viewPager2 = "androidx.viewpager2:viewpager2:${Versions.viewPager2}"
         const val recyclerView = "androidx.recyclerview:recyclerview:${Versions.recyclerView}"
+        const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutinesAndroid}"
+
+        // kotlin view model
+        const val viewmodelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
+        // kotlin live data extensions
+        const val livedataKtx = "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
     }
 
     object Tests {

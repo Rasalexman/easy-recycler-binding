@@ -14,14 +14,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:id="@+id/buttonsLayout"
+            android:layout_width="0dp"
+            android:background="@color/color_tr_dark"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <Button
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/button_clear"
+                android:onClick="@{() -> vm.onClearButtonClicked()}"
+                />
+
+            <Button
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/button_generate"
+                android:onClick="@{() -> vm.onGenerateButtonClicked()}"
+                />
+
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:items="@{vm.items}"
+            app:items="@{vm.currentItems}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonsLayout"
             app:rv_config="@{vm.createRvConfig()}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

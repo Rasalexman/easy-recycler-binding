@@ -24,7 +24,7 @@ android {
         }
 
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
@@ -40,6 +40,7 @@ android {
 
     packagingOptions {
         exclude("META-INF/notice.txt")
+        exclude("DebugProbesKt.bin")
     }
 
     // Declare the task that will monitor all configurations.
@@ -66,10 +67,6 @@ android {
     }
 }
 
-kapt {
-    useBuildCache = true
-}
-
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
     implementation(kotlin("stdlib", Versions.kotlin))
@@ -78,6 +75,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.material)
     implementation(appdependencies.Libs.Core.recyclerView)
+    implementation(appdependencies.Libs.Core.coroutines)
 }
 
 group = "com.rasalexman.easyrecyclerbinding"
@@ -100,14 +98,14 @@ afterEvaluate {
                 artifactId = "easyrecyclerbinding"
                 version = appdependencies.Builds.ERB.VERSION_NAME
             }
-            create<MavenPublication>("debug") {
+            /*create<MavenPublication>("debug") {
                 from(components["debug"])
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding-debug"
                 version = appdependencies.Builds.ERB.VERSION_NAME
-            }
+            }*/
         }
 
         repositories {

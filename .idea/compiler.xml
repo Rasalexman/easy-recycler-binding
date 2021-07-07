@@ -2,6 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <option name="BUILD_PROCESS_HEAP_SIZE" value="8056" />
-    <bytecodeTargetLevel target="1.8" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="EasyRecyclerBinding.app" target="11" />
+      <module name="EasyRecyclerBinding.buildSrc" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>

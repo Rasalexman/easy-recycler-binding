@@ -120,6 +120,8 @@ dependencies {
     implementation(appdependencies.Libs.Core.navigationUiKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.material)
+    implementation(appdependencies.Libs.Core.livedataKtx)
+    implementation(appdependencies.Libs.Core.viewmodelKtx)
     //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
     testImplementation(Libs.Tests.junit)
