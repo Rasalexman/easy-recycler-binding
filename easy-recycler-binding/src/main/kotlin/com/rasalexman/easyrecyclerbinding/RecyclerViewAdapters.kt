@@ -181,6 +181,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         }
     }
 
+    recyclerView.stopScroll()
     val adapter = recyclerView.adapter!!
     diffCallback?.setData(newItems.orEmpty(), adapter)
         ?: applyData(adapter, oldItems, newItems)
@@ -231,21 +232,40 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), CoroutineScope {
     private var oldData: List<ItemType>? = null
     private var newData: List<ItemType>? = null
 
+    private var lastDiffUtil: DiffUtil.DiffResult? = null
+    private var lastJob: Job? = null
+
     private val supervisorJob = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + supervisorJob
 
     open fun setData(fresh: List<ItemType>, adapter: RecyclerView.Adapter<*>) {
-        supervisorJob.cancelChildren()
+        clearLastJob()
+
         val itemsAdapter = adapter as ItemsBinderAdapter<ItemType>
         oldData = itemsAdapter.getAdapterItems()
         newData = fresh
-        launch {
-            val diffResult = withContext(Dispatchers.Default) {
-                DiffUtil.calculateDiff(this@DiffCallback)
+        lastJob = launch {
+            //val startTime = System.currentTimeMillis()
+            //println("-----> start processing ")
+            lastDiffUtil = processCalculationAsync()
+            lastDiffUtil?.let {
+                itemsAdapter.setAdapterItems(fresh)
+                it.dispatchUpdatesTo(adapter)
+                //val finishTime = System.currentTimeMillis() - startTime
+                //println("-----> finish processing in ${finishTime}ms")
             }
-            itemsAdapter.setAdapterItems(fresh)
-            diffResult.dispatchUpdatesTo(adapter)
         }
+    }
+
+    protected open fun clearLastJob() {
+        lastDiffUtil = null
+        lastJob?.cancel()
+        lastJob = null
+        supervisorJob.cancelChildren()
+    }
+
+    protected open suspend fun processCalculationAsync() = withContext(Dispatchers.Default) {
+        DiffUtil.calculateDiff(this@DiffCallback)
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -286,6 +306,12 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), CoroutineScope {
 
     override fun getNewListSize(): Int {
         return newData?.size ?: 0
+    }
+
+    open fun clear() {
+        clearLastJob()
+        oldData = null
+        newData = null
     }
 }
 

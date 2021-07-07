@@ -13,8 +13,8 @@ object Builds {
     }
 
     object ERB {
-        const val VERSION_CODE = 10001
-        const val VERSION_NAME = "0.0.10"
+        const val VERSION_CODE = 10101
+        const val VERSION_NAME = "0.1.1"
     }
 }
 

@@ -39,6 +39,22 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         }
     }
 
+    fun addItems(minItems: Int = 20, maxItems: Int = 100) {
+        viewModelScope.launch {
+            val itemsList = mutableListOf<IRecyclerItem>()
+            withContext(Dispatchers.IO) {
+                val itemCounts = Random.nextInt(minItems, maxItems)
+                repeat(itemCounts) {
+                    itemsList.add(itemsCreator(it))
+                }
+                val lastList = items.value.orEmpty().toMutableList()
+                lastList.addAll(0, itemsList)
+                println("------> addedList size = ${lastList.size}")
+                items.postValue(lastList)
+            }
+        }
+    }
+
     fun clearItems() {
         items.postValue(emptyList())
     }

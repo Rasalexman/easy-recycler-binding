@@ -11,6 +11,7 @@ import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
 import com.rasalexman.erb.ui.main.MainFragmentDirections
+import com.rasalexman.erb.ui.viewpager2example.SearchState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
@@ -23,6 +24,8 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         get() = R.layout.item_vp2_second_page
 
     private val searchQuery: MutableLiveData<String> = MutableLiveData<String>("")
+
+    val searchState = MutableLiveData<SearchState>(SearchState.CLOSED)
 
     val currentItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
         liveData(Dispatchers.Default) {
@@ -67,6 +70,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     fun onClearButtonClicked() {
         clearItems()
         searchQuery.postValue("")
+        searchState.postValue(SearchState.CLOSED)
     }
 
     fun onGenerateButtonClicked() {
@@ -75,11 +79,16 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         createItems(minItems, maxItems)
     }
 
+    fun onAddButtonClicked() {
+        val minItems = Random.nextInt(100, 500)
+        val maxItems = Random.nextInt(500, 10000)
+        addItems(minItems, maxItems)
+    }
+
     override suspend fun itemsCreator(position: Int): IRecyclerItem {
         return SimpleRecyclerItemUI(
             title = UUID.randomUUID().toString().take(14),
             id = UUID.randomUUID().toString()
         )
     }
-
 }

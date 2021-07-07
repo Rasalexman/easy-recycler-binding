@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.viewModels
 import com.rasalexman.easyrecyclerbinding.changeCallbackMap
@@ -23,6 +24,8 @@ class ViewPager2ExampleFragment :
     BasePagerBindingFragment<Vp2ExampleFragmentBinding, ViewPager2ExampleViewModel>() {
     override val layoutId: Int get() = R.layout.vp2_example_fragment
     override val viewModel: ViewPager2ExampleViewModel by viewModels()
+    private var searchViewItem: SearchView? = null
+    private var searchMenuItem: MenuItem? = null
 
     override val pageTitles: List<String> = listOf("Login", "With Recycler")
     override val pagesVMList: List<BaseViewModel> by lazy {
@@ -54,13 +57,19 @@ class ViewPager2ExampleFragment :
             }
         })
         item.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean = true
+            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+                secondPageViewModel.searchState.postValue(SearchState.OPEN)
+                return true
+            }
             override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
                 secondPageViewModel.onQueryTextChanged("")
+                secondPageViewModel.searchState.postValue(SearchState.CLOSED)
                 return true
             }
 
         })
+        searchMenuItem = item
+        searchViewItem = searchView
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -75,6 +84,18 @@ class ViewPager2ExampleFragment :
         setupTabMediator(binding.tabLayout, binding.viewpager2)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        secondPageViewModel.searchState.observe(viewLifecycleOwner) {
+            if(it == SearchState.CLOSED) {
+                searchViewItem?.setQuery("", false)
+                if(searchMenuItem?.isActionViewExpanded == true) {
+                    searchMenuItem?.collapseActionView()
+                }
+            }
+        }
+    }
+
     override fun setupViewPagerConfig(binding: Vp2ExampleFragmentBinding) {
         binding.vpConfig = createRecyclerMultiConfig {
             itemId = BR.vm
@@ -82,6 +103,11 @@ class ViewPager2ExampleFragment :
     }
 
     override fun onDestroyView() {
+        searchMenuItem?.setOnActionExpandListener(null)
+        searchViewItem?.setOnQueryTextListener(null)
+        searchMenuItem = null
+        searchViewItem = null
+
         val callbackKey = binding?.viewpager2.hashCode().toString()
         changeCallbackMap[callbackKey]?.let {
             it.onPageChangedCallback = null
