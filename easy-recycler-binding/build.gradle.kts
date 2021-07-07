@@ -24,7 +24,7 @@ android {
         }
 
         getByName("release") {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
@@ -98,14 +98,14 @@ afterEvaluate {
                 artifactId = "easyrecyclerbinding"
                 version = appdependencies.Builds.ERB.VERSION_NAME
             }
-            /*create<MavenPublication>("debug") {
+            create<MavenPublication>("debug") {
                 from(components["debug"])
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding-debug"
                 version = appdependencies.Builds.ERB.VERSION_NAME
-            }*/
+            }
         }
 
         repositories {
