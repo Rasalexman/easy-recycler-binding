@@ -8,11 +8,9 @@ import com.rasalexman.easyrecyclerbinding.createRecyclerConfig
 import com.rasalexman.easyrecyclerbinding.viewPagerConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
-import com.rasalexman.erb.databinding.ItemRecyclerBinding
-import com.rasalexman.erb.databinding.ItemVpFirstPageBinding
-import com.rasalexman.erb.databinding.ItemVpSecondPageBinding
-import com.rasalexman.erb.databinding.VpExampleFragmentBinding
+import com.rasalexman.erb.databinding.*
 import com.rasalexman.erb.models.RecyclerItemUI
+import com.rasalexman.erb.models.RecyclerItemUI2
 import com.rasalexman.erb.ui.base.BaseBindingFragment
 
 class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, ViewPagerExampleViewModel>() {
@@ -51,8 +49,8 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
                 viewModel = viewModel,
                 viewModelBRId = BR.vm
             ).apply {
-                rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
-                    layoutId = R.layout.item_recycler
+                rvConfig = createRecyclerConfig<RecyclerItemUI2, ItemRecycler2Binding> {
+                    layoutId = R.layout.item_recycler2
                     itemId = BR.item
                 }
             }

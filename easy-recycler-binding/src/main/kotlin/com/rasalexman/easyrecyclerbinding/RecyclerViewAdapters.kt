@@ -106,7 +106,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView: RecyclerView,
     newItems: List<ItemType>?,
     dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
-    visibleThreshold: Int = 5
+    visibleThreshold: Int = 16
 ) {
 
     if (dataBindingRecyclerViewConfig == null) {
@@ -115,7 +115,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
     var oldItems: MutableList<ItemType>? = null
 
-    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<ItemType>
+    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<Any>
 
     if (diffCallback == null) {
         recyclerView.tag?.let {
@@ -151,8 +151,8 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
                         onLoadMoreHandler(currentPage)
                     }
                 })
-            }
-            // scroll listener
+            } ?:
+            // or check another scroll listener scroll listener
             dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
                 recyclerView.addOnScrollListener(it)
             }
@@ -169,9 +169,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         recyclerView.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems.orEmpty())
 
         dataBindingRecyclerViewConfig.itemAnimator?.let {
-            if (newItems != null) {
-                recyclerView.itemAnimator = it
-            }
+            recyclerView.itemAnimator = it
         }
 
         dataBindingRecyclerViewConfig.itemDecorator?.let { decorationList ->
@@ -202,7 +200,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
         itemId = this.itemId,
         doubleClickDelayTime = this.doubleClickDelayTime,
         consumeLongClick = this.consumeLongClick,
-        needPending = this.needPending,
+        isLifecyclePending = this.isLifecyclePending,
         realisation = this.realisation,
         onItemClickListener = this.onItemClickListener,
         onItemDoubleClickListener = this.onItemDoubleClickListener,
@@ -339,7 +337,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val itemDecorator: List<RecyclerView.ItemDecoration>? = null,
     val diffUtilCallback: DiffCallback<*>?,
     val hasFixedSize: Boolean = true,
-    val needPending: Boolean = true
+    val isLifecyclePending: Boolean = false
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -362,7 +360,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var itemDecorator: List<RecyclerView.ItemDecoration>? = null
         var diffUtilCallback: DiffCallback<*>? = null
         var hasFixedSize: Boolean = true
-        var needPending: Boolean = true
+        var isLifecyclePending: Boolean = false
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
@@ -374,12 +372,13 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 doubleClickDelayTime = doubleClickDelayTime,
                 consumeLongClick = consumeLongClick,
                 layoutManager = layoutManager,
+                onScrollListener = onLoadMore,
                 recyclerOnScrollListener = onScrollListener,
                 itemAnimator = itemAnimator,
                 itemDecorator = itemDecorator,
                 diffUtilCallback = diffUtilCallback,
                 hasFixedSize = hasFixedSize,
-                needPending = needPending,
+                isLifecyclePending = isLifecyclePending,
                 realisation = object : DataBindingAdapter<BT> {
 
                     override fun onCreate(binding: BT) {
@@ -420,8 +419,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                             onItemLongClickListener?.invoke(it, position)
                         }
                     }
-                },
-                onScrollListener = onLoadMore
+                }
             )
         }
     }
@@ -447,7 +445,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     private val itemId: Int,
     private val doubleClickDelayTime: Long = 150L,
     private val consumeLongClick: Boolean = true,
-    private val needPending: Boolean = true,
+    private val isLifecyclePending: Boolean = false,
     private val lifecycleOwner: LifecycleOwner? = null,
     private val realisation: DataBindingAdapter<BindingType>? = null,
     private val onItemClickListener: OnRecyclerItemClickListener? = null,
@@ -500,7 +498,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     private fun setupLifecycleOwner(binding: ViewDataBinding, parent: ViewGroup) {
         val bindingLifecycleOwner = binding.lifecycleOwner
         if (this.lifecycleOwner == null) {
-            if (bindingLifecycleOwner == null) {
+            if (bindingLifecycleOwner == null && isLifecyclePending) {
                 val parentOwner = try {
                     getLifecycleOwner(parent)
                 } catch (e: Exception) {
@@ -517,6 +515,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
         val binding = getLayoutInflater(parent.context).createBinding<BindingType>(viewType, parent)
+
         setupLifecycleOwner(binding, parent)
         val holder = BindingViewHolder(binding)
         onCreate(binding)
@@ -551,9 +550,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
                 setOnLongClickListener(clickListener)
             }
         }
-        if(needPending) {
-            binding.executePendingBindings()
-        }
+
         return holder
     }
 
@@ -561,7 +558,13 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
         val absolutePosition = holder.absoluteAdapterPosition
         if (itemId != -1) {
-            holder.binding.setVariable(itemId, items[absolutePosition])
+            holder.binding.apply {
+                setVariable(itemId, items[absolutePosition])
+                // only if custom pending needed and we do not has adapter lifecycleOwner
+                if(lifecycleOwner == null && !isLifecyclePending) {
+                    executePendingBindings()
+                }
+            }
         }
         onBind(holder.binding as BindingType, absolutePosition)
     }
@@ -585,7 +588,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     }
 
     class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
-        private var currentBinding: WeakReference<ViewDataBinding> = WeakReference(vb)
+        private val currentBinding: WeakReference<ViewDataBinding> = WeakReference(vb)
         val binding: ViewDataBinding
             get() = currentBinding.get() ?: throw NullPointerException("There is no binding for ViewHolder $this")
     }

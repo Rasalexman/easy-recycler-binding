@@ -1,6 +1,5 @@
 package com.rasalexman.erb.ui.recyclerexample
 
-import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.rasalexman.easyrecyclerbinding.IBindingModel
@@ -34,7 +33,7 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
             }
 
             onLoadMore = {
-                viewModel.createItems()
+                viewModel.addItems(atFirst = false)
             }
         }
     }

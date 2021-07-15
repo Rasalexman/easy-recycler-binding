@@ -62,6 +62,11 @@ android {
         }
     }
 
+    kotlinOptions {
+        languageVersion = "1.5"
+        apiVersion = "1.5"
+    }
+
     buildFeatures {
         dataBinding = true
     }
@@ -69,11 +74,10 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib", Versions.kotlin))
+    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
     implementation(appdependencies.Libs.Core.coreKtx)
     implementation(appdependencies.Libs.Core.viewPager2)
-    implementation(appdependencies.Libs.Core.material)
     implementation(appdependencies.Libs.Core.recyclerView)
     implementation(appdependencies.Libs.Core.coroutines)
     implementation(appdependencies.Libs.Core.fragment_ktx)

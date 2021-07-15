@@ -19,7 +19,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         createItems()
     }
 
-    fun createItems(minItems: Int = 100, maxItems: Int = 6000) {
+    fun createItems(minItems: Int = 10, maxItems: Int = 30) {
         viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {
@@ -39,7 +39,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         }
     }
 
-    fun addItems(minItems: Int = 20, maxItems: Int = 100) {
+    fun addItems(minItems: Int = 20, maxItems: Int = 100, atFirst: Boolean = true) {
         viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {
@@ -48,7 +48,8 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                     itemsList.add(itemsCreator(it))
                 }
                 val lastList = items.value.orEmpty().toMutableList()
-                lastList.addAll(0, itemsList)
+                if(atFirst) lastList.addAll(0, itemsList)
+                else lastList.addAll(itemsList)
                 println("------> addedList size = ${lastList.size}")
                 items.postValue(lastList)
             }

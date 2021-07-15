@@ -3,11 +3,9 @@ package com.rasalexman.erb.ui.viewpager2example.pages
 import androidx.lifecycle.*
 import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
-import com.rasalexman.easyrecyclerbinding.recyclerConfig
 import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
-import com.rasalexman.erb.databinding.ItemRecyclerBinding
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
@@ -47,7 +45,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
     fun createRvConfig() = recyclerMultiConfig {
         itemId = BR.item
-        //layoutId = R.layout.item_recycler
+        layoutId = R.layout.item_recycler
 
         onItemClick = { item, _ ->
             item as IRecyclerItem
@@ -55,7 +53,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                 MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
         }
 
-        needPending = false
+        //isLifecyclePending = false
 
         diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
