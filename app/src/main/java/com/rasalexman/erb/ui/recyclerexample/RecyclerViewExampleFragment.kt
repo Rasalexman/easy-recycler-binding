@@ -17,18 +17,19 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
     override fun initBinding(binding: RvExampleFragmentBinding) {
         super.initBinding(binding)
         binding.rvConfig = createRecyclerMultiConfig {
-            layoutId = R.layout.item_recycler
             itemId = BR.item
+            //needPending = false
+
             onItemClick = { item: IBindingModel, pos: Int ->
-                Log.d("onItemClick", "Position = $pos")
+                println("onItemClick Position = $pos")
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
             }
             onItemLongClickListener = { item: IBindingModel, pos: Int ->
-                Log.d("onItemLongClickListener", "Position = $pos")
+                println("onItemLongClickListener Position = $pos")
                 Toast.makeText(context, "onItemLongClickListener", Toast.LENGTH_SHORT).show()
             }
             onItemDoubleClicked = { item: IBindingModel, pos: Int ->
-                Log.d("onItemDoubleClicked", "Position = $pos")
+                println("onItemDoubleClicked Position = $pos")
                 Toast.makeText(context, "onItemDoubleClicked", Toast.LENGTH_SHORT).show()
             }
 

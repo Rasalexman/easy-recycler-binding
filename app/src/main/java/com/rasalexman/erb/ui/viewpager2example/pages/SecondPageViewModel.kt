@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.easyrecyclerbinding.recyclerConfig
+import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
 import com.rasalexman.erb.databinding.ItemRecyclerBinding
@@ -44,19 +45,22 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         searchQuery.postValue(newText)
     }
 
-    fun createRvConfig() = recyclerConfig<SimpleRecyclerItemUI, ItemRecyclerBinding> {
+    fun createRvConfig() = recyclerMultiConfig {
         itemId = BR.item
-        layoutId = R.layout.item_recycler
+        //layoutId = R.layout.item_recycler
 
         onItemClick = { item, _ ->
+            item as IRecyclerItem
             navigationState.value =
                 MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
         }
 
-        diffUtilCallback = object : DiffCallback<SimpleRecyclerItemUI>() {
+        needPending = false
+
+        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
-                oldItem: SimpleRecyclerItemUI?,
-                newItem: SimpleRecyclerItemUI?
+                oldItem: IRecyclerItem?,
+                newItem: IRecyclerItem?
             ): Boolean {
                 return if (oldItem != null && newItem != null) {
                     oldItem.id == newItem.id

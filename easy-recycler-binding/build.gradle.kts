@@ -76,6 +76,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.material)
     implementation(appdependencies.Libs.Core.recyclerView)
     implementation(appdependencies.Libs.Core.coroutines)
+    implementation(appdependencies.Libs.Core.fragment_ktx)
 }
 
 group = "com.rasalexman.easyrecyclerbinding"

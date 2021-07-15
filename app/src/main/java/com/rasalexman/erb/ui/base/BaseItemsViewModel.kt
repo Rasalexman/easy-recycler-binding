@@ -19,7 +19,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         createItems()
     }
 
-    fun createItems(minItems: Int = 20, maxItems: Int = 100) {
+    fun createItems(minItems: Int = 100, maxItems: Int = 6000) {
         viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {

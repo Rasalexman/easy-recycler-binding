@@ -72,13 +72,21 @@ fun<VB : ViewDataBinding, VM : ViewModel> Fragment.createBindingViewWithViewMode
 fun<I : Any, BT : ViewDataBinding> Fragment.createRecyclerConfig(
     block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit
 ): DataBindingRecyclerViewConfig<BT> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block).also { it.lifecycleOwner = viewLifecycleOwner }.build()
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>()
+        .apply(block)
+        .also {
+            it.lifecycleOwner = viewLifecycleOwner
+        }.build()
 }
 
 fun Fragment.createRecyclerMultiConfig(
     block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit
 ): DataBindingRecyclerViewConfig<ViewDataBinding> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>().apply(block).also { it.lifecycleOwner = viewLifecycleOwner }.build()
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>()
+        .apply(block)
+        .also {
+            it.lifecycleOwner = viewLifecycleOwner
+        }.build()
 }
 
 /**

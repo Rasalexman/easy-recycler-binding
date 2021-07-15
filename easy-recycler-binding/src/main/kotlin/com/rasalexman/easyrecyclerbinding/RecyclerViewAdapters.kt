@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -200,6 +202,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
         itemId = this.itemId,
         doubleClickDelayTime = this.doubleClickDelayTime,
         consumeLongClick = this.consumeLongClick,
+        needPending = this.needPending,
         realisation = this.realisation,
         onItemClickListener = this.onItemClickListener,
         onItemDoubleClickListener = this.onItemDoubleClickListener,
@@ -335,7 +338,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val itemAnimator: RecyclerView.ItemAnimator? = null,
     val itemDecorator: List<RecyclerView.ItemDecoration>? = null,
     val diffUtilCallback: DiffCallback<*>?,
-    val hasFixedSize: Boolean = true
+    val hasFixedSize: Boolean = true,
+    val needPending: Boolean = true
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -356,8 +360,9 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onScrollListener: RecyclerView.OnScrollListener? = null
         var itemAnimator: RecyclerView.ItemAnimator? = null
         var itemDecorator: List<RecyclerView.ItemDecoration>? = null
-        var diffUtilCallback: DiffCallback<I>? = null
+        var diffUtilCallback: DiffCallback<*>? = null
         var hasFixedSize: Boolean = true
+        var needPending: Boolean = true
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
@@ -374,6 +379,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 itemDecorator = itemDecorator,
                 diffUtilCallback = diffUtilCallback,
                 hasFixedSize = hasFixedSize,
+                needPending = needPending,
                 realisation = object : DataBindingAdapter<BT> {
 
                     override fun onCreate(binding: BT) {
@@ -441,6 +447,7 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     private val itemId: Int,
     private val doubleClickDelayTime: Long = 150L,
     private val consumeLongClick: Boolean = true,
+    private val needPending: Boolean = true,
     private val lifecycleOwner: LifecycleOwner? = null,
     private val realisation: DataBindingAdapter<BindingType>? = null,
     private val onItemClickListener: OnRecyclerItemClickListener? = null,
@@ -475,10 +482,13 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     }
 
     private fun getLifecycleOwner(view: View): LifecycleOwner {
-        return parentFragmentLifecycleOwner?.get()
-            ?: view.context.getOwner<LifecycleOwner>().apply {
-                parentFragmentLifecycleOwner = WeakReference(this)
-            }
+        return parentFragmentLifecycleOwner?.get() ?: try {
+            view.findFragment<Fragment>().viewLifecycleOwner
+        } catch(e: Exception) {
+            view.context.getOwner<LifecycleOwner>()
+        }.also {
+            parentFragmentLifecycleOwner = WeakReference(it)
+        }
     }
 
     private fun getLayoutInflater(context: Context): LayoutInflater {
@@ -487,12 +497,12 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
         }
     }
 
-    private fun setupLifecycleOwner(binding: BindingType) {
+    private fun setupLifecycleOwner(binding: ViewDataBinding, parent: ViewGroup) {
         val bindingLifecycleOwner = binding.lifecycleOwner
-        if (lifecycleOwner == null) {
+        if (this.lifecycleOwner == null) {
             if (bindingLifecycleOwner == null) {
                 val parentOwner = try {
-                    getLifecycleOwner(binding.root)
+                    getLifecycleOwner(parent)
                 } catch (e: Exception) {
                     null
                 }
@@ -500,21 +510,15 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
             }
         } else {
             if (bindingLifecycleOwner == null) {
-                binding.lifecycleOwner = lifecycleOwner
+                binding.lifecycleOwner = this.lifecycleOwner
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
-        val binding = DataBindingUtil.inflate<BindingType>(
-            getLayoutInflater(parent.context),
-            viewType,
-            parent,
-            false
-        )
-
+        val binding = getLayoutInflater(parent.context).createBinding<BindingType>(viewType, parent)
+        setupLifecycleOwner(binding, parent)
         val holder = BindingViewHolder(binding)
-        setupLifecycleOwner(binding)
         onCreate(binding)
 
         val clickListener = object : ViewClickersListener(
@@ -547,7 +551,9 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
                 setOnLongClickListener(clickListener)
             }
         }
-        holder.binding.executePendingBindings()
+        if(needPending) {
+            binding.executePendingBindings()
+        }
         return holder
     }
 
@@ -563,7 +569,6 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
     @Suppress("UNCHECKED_CAST")
     override fun onViewRecycled(holder: BindingViewHolder) {
         onUnbind(holder.binding as BindingType)
-        holder.binding.unbind()
         super.onViewRecycled(holder)
     }
 
@@ -579,7 +584,11 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
         realisation?.onUnbind(binding)
     }
 
-    class BindingViewHolder(val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root)
+    class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
+        private var currentBinding: WeakReference<ViewDataBinding> = WeakReference(vb)
+        val binding: ViewDataBinding
+            get() = currentBinding.get() ?: throw NullPointerException("There is no binding for ViewHolder $this")
+    }
 }
 
 interface DataBindingAdapter<BindingType : ViewDataBinding> {

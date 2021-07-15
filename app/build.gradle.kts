@@ -124,6 +124,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.viewmodelKtx)
     //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
+    debugImplementation(Libs.Tests.leakCanary)
     testImplementation(Libs.Tests.junit)
     androidTestImplementation(Libs.Tests.runner)
     androidTestImplementation(Libs.Tests.espresso)
