@@ -53,20 +53,8 @@ fun<VB : ViewDataBinding, VM : ViewModel> Fragment.createBindingWithViewModel(
     return layoutInflater.createBinding<VB>(layoutId, container, attachToParent, false).also {
         it.lifecycleOwner = viewLifecycleOwner
         it.setVariable(viewModelBRId, viewModel)
+        it.executePendingBindings()
     }
-}
-
-fun<VB : ViewDataBinding, VM : ViewModel> Fragment.createBindingViewWithViewModel(
-    layoutId: Int,
-    viewModel: VM,
-    viewModelBRId: Int,
-    container: ViewGroup?,
-    attachToParent: Boolean = false
-): View {
-    return layoutInflater.createBinding<VB>(layoutId, container, attachToParent, false).also {
-        it.lifecycleOwner = viewLifecycleOwner
-        it.setVariable(viewModelBRId, viewModel)
-    }.root
 }
 
 fun<I : Any, BT : ViewDataBinding> Fragment.createRecyclerConfig(
@@ -92,10 +80,10 @@ fun Fragment.createRecyclerMultiConfig(
 /**
  * Inline function to retrieve [Context] owners
  */
-inline fun <reified T> Context.getOwner(): T {
-    var context: Context = this
+inline fun <reified T> Context.getOwner(): T? {
+    var context: Context? = this
     while (context !is T) {
-        context = (context as ContextWrapper).baseContext
+        context = (context as? ContextWrapper)?.baseContext
     }
     return context
 }

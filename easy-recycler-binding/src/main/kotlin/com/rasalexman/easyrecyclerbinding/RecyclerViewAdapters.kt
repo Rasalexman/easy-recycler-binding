@@ -1,24 +1,26 @@
 package com.rasalexman.easyrecyclerbinding
 
-import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.*
-import androidx.fragment.app.Fragment
+import androidx.databinding.BindingAdapter
+import androidx.databinding.InverseBindingAdapter
+import androidx.databinding.InverseBindingListener
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.findFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.recyclerview.widget.DiffUtil
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import java.util.*
-import kotlin.coroutines.CoroutineContext
+import kotlin.math.abs
 
 class CustomPageChangeCallback : ViewPager2.OnPageChangeCallback() {
     var onPageChangedCallback: (() -> Unit)? = null
@@ -44,26 +46,14 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
         return
     }
 
-    var oldItems: MutableList<ItemType>? = null
-    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<ItemType>
-
-    if (diffCallback == null) {
-        viewPager.tag?.let {
-            @Suppress("UNCHECKED_CAST")
-            oldItems = it as? MutableList<ItemType>
-        }
-
-        if (oldItems == null) {
-            oldItems = mutableListOf()
-            viewPager.tag = oldItems
-        }
-    }
+    val oldItems: MutableList<ItemType> =
+        viewPager.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
     if (viewPager.adapter == null) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
-        viewPager.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems.orEmpty())
+        viewPager.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
 
         val callbackKey = viewPager.hashCode().toString()
         val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
@@ -72,9 +62,11 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
         viewPager.registerOnPageChangeCallback(lastCallback)
     }
 
-    val adapter = viewPager.adapter!!
-    diffCallback?.setData(newItems.orEmpty(), adapter)
-        ?: applyData(adapter, oldItems, newItems)
+    viewPager.adapter?.applyAdapterData(
+        oldItems = oldItems,
+        newItems = newItems,
+        dataBindingRecyclerViewConfig = dataBindingRecyclerViewConfig
+    )
 }
 
 @BindingAdapter(value = ["selectedPage", "positionAttrChanged"], requireAll = false)
@@ -101,37 +93,38 @@ fun getSelectedPosition(viewPager: ViewPager2): Int {
     return viewPager.currentItem
 }
 
-@BindingAdapter(value = ["items", "rv_config", "visibleThreshold"], requireAll = false)
+@BindingAdapter(value = ["items", "rv_config", "position", "visibleThreshold"], requireAll = false)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView: RecyclerView,
     newItems: List<ItemType>?,
     dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
-    visibleThreshold: Int = 16
+    scrollPosition: ScrollPosition? = null,
+    visibleThreshold: Int = RecyclerView.NO_POSITION
 ) {
 
     if (dataBindingRecyclerViewConfig == null) {
         return
     }
 
-    var oldItems: MutableList<ItemType>? = null
-
-    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<Any>
-
-    if (diffCallback == null) {
-        recyclerView.tag?.let {
-            @Suppress("UNCHECKED_CAST")
-            oldItems = it as? MutableList<ItemType>
-        }
-
-        if (oldItems == null) {
-            oldItems = mutableListOf()
-            recyclerView.tag = oldItems
-        }
-    }
+    val oldItems: MutableList<ItemType> =
+        recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
     if (recyclerView.adapter == null) {
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
 
+        if (scrollPosition != null) {
+            try {
+                val lifecycleOwner =
+                    dataBindingRecyclerViewConfig.lifecycleOwner ?: recyclerView.findFragment()
+                lifecycleOwner.lifecycle.addObserver(
+                    ScrollPositionObserver(lifecycleOwner, recyclerView, scrollPosition)
+                )
+            } catch (e: Exception) {
+                println("[ERROR]: error with recyclerView.findFragment = $e")
+            }
+        }
+
+        var scrollListener: RecyclerView.OnScrollListener? = null
         if (recyclerView.layoutManager == null) {
             val mLayoutManager: RecyclerView.LayoutManager =
                 dataBindingRecyclerViewConfig.layoutManager
@@ -143,14 +136,15 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.layoutManager = mLayoutManager
             // first clear all listeners
             recyclerView.clearOnScrollListeners()
+
             // custom listener
             dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
-                recyclerView.addOnScrollListener(object :
+                scrollListener = object :
                     EndlessRecyclerOnScrollListener(mLayoutManager, visibleThreshold) {
                     override fun onLoadMore(currentPage: Int) {
                         onLoadMoreHandler(currentPage)
                     }
-                })
+                }.apply(recyclerView::addOnScrollListener)
             } ?:
             // or check another scroll listener scroll listener
             dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
@@ -166,7 +160,26 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.defaultFocusHighlightEnabled = false
         }
 
-        recyclerView.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems.orEmpty())
+        recyclerView.adapter =
+            dataBindingRecyclerViewConfig.createAdapter(oldItems).also { adapter ->
+                scrollListener?.let { listener ->
+                    adapter.registerAdapterDataObserver(object :
+                        RecyclerView.AdapterDataObserver() {
+                        override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+                            (listener as? EndlessRecyclerOnScrollListener)?.resetTotalCount(adapter.itemCount)
+                        }
+
+                        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                            if (positionStart == 0) {
+                                //println("-----> onItemRangeInserted = $positionStart")
+                                (listener as? EndlessRecyclerOnScrollListener)?.resetTotalCount(
+                                    adapter.itemCount
+                                )
+                            }
+                        }
+                    })
+                }
+            }
 
         dataBindingRecyclerViewConfig.itemAnimator?.let {
             recyclerView.itemAnimator = it
@@ -182,18 +195,89 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         }
     }
 
-    recyclerView.stopScroll()
-    val adapter = recyclerView.adapter!!
-    diffCallback?.setData(newItems.orEmpty(), adapter)
-        ?: applyData(adapter, oldItems, newItems)
+    val oldItemsCount = recyclerView.adapter?.itemCount ?: 0
+    recyclerView.adapter?.applyAdapterData(
+        oldItems = oldItems,
+        newItems = newItems,
+        dataBindingRecyclerViewConfig = dataBindingRecyclerViewConfig
+    )
+    scrollPosition?.let {
+        val newItemsCount = recyclerView.adapter?.itemCount ?: 0
+        if (oldItemsCount == 0 && newItemsCount > 0) {
+            recyclerView.stopScroll()
+            (recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(
+                it.index,
+                it.top
+            )
+        }
+    }
+}
 
+internal class ScrollPositionObserver(
+    lifecycleOwner: LifecycleOwner,
+    recyclerView: RecyclerView,
+    scrollPosition: ScrollPosition
+) : LifecycleObserver {
+
+    private val ownerWeakRef = WeakReference(lifecycleOwner)
+    private val recyclerWeakRef = WeakReference<RecyclerView>(recyclerView)
+    private val scrollWeakRef = WeakReference(scrollPosition)
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onSaveScroll() {
+        scrollWeakRef.get()?.let { scrollPosition ->
+            recyclerWeakRef.get()?.let { currentRV ->
+                currentRV.stopScroll()
+                scrollPosition.apply {
+                    index = (currentRV.layoutManager as? LinearLayoutManager?)?.findFirstVisibleItemPosition() ?: 0
+                    top = currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
+                }
+            }
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy() {
+        ownerWeakRef.get()?.lifecycle?.removeObserver(this)
+        ownerWeakRef.clear()
+        scrollWeakRef.clear()
+        recyclerWeakRef.clear()
+    }
+}
+
+private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldItems(
+    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
+): MutableList<ItemType> {
+    var oldItems: MutableList<ItemType>? = null
+    if (dataBindingRecyclerViewConfig.diffUtilCallback == null) {
+        this.tag?.let {
+            @Suppress("UNCHECKED_CAST")
+            oldItems = it as? MutableList<ItemType>
+        }
+
+        if (oldItems == null) {
+            oldItems = mutableListOf()
+            this.tag = oldItems
+        }
+    }
+    return oldItems ?: mutableListOf()
+}
+
+fun<ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<RecyclerView.ViewHolder>.applyAdapterData(
+    oldItems: MutableList<ItemType>,
+    newItems: List<ItemType>?,
+    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
+) {
+    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<Any>
+    diffCallback?.setData(newItems, this)
+        ?: applyData(this, oldItems, newItems)
 }
 
 @Suppress("UNCHECKED_CAST")
 private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
     items: List<ItemType>
-): RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder> {
-    return DataBindingRecyclerAdapter(
+): RecyclerView.Adapter<BindingViewHolder> {
+    val erbAdapter = ErbAdapter(
         items = items,
         lifecycleOwner = this.lifecycleOwner,
         layoutId = this.layoutId,
@@ -206,6 +290,18 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
         onItemDoubleClickListener = this.onItemDoubleClickListener,
         onItemLongClickListener = this.onItemLongClickListener
     )
+    return if (this.adapterType == BindingAdapterType.STANDARD)
+        DataBindingRecyclerAdapter(erbAdapter = erbAdapter)
+    else {
+        val localDiffItemsCallback =
+            (diffItemsUtilCallback as? DiffItemsCallback<ItemType>) ?: DiffItemsCallback<ItemType>(
+                this.lifecycleOwner
+            )
+        DataBindingPagingDataAdapter<ItemType, BindingType>(
+            erbAdapter = erbAdapter,
+            diffUtilCallback = localDiffItemsCallback
+        )
+    }
 }
 
 private fun <ItemType : Any> applyData(
@@ -215,116 +311,53 @@ private fun <ItemType : Any> applyData(
 ) {
     if (oldItems !== newItems) {
         oldItems?.let { old ->
+            val oldSz = old.size
+            val firstItem = if (oldSz > 0) old.first() else null
             old.clear()
-            newItems?.let {
-                old.addAll(newItems)
-            }
+            newItems?.let { new ->
+                val indFirst = firstItem?.let { new.indexOf(it) } ?: 0
+                val newSz = new.size
+                val diff = newSz - oldSz
+                old.addAll(new)
+                when {
+                    diff > 0 -> {
+                        // adding
+                        val adSz = if (indFirst > 0) 0 else oldSz
+                        adapter.notifyItemRangeInserted(adSz, diff)
+                    }
+                    diff < 0 -> {
+                        val remDiffSz = abs(diff)
+                        // deleting
+                        val remSz = if (indFirst < 0) 0 else (oldSz - remDiffSz - 1)
+                        adapter.notifyItemRangeRemoved(remSz, remDiffSz)
+                    }
+                    else -> {
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            } ?: adapter.notifyDataSetChanged()
         }
     } else {
         oldItems?.let { old ->
             newItems?.let {
-                old.addAll(newItems)
+                old.addAll(it)
             }
+            adapter.notifyDataSetChanged()
         }
-    }
-    adapter.notifyDataSetChanged()
-}
-
-open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), CoroutineScope {
-    private var oldData: List<ItemType>? = null
-    private var newData: List<ItemType>? = null
-
-    private var lastDiffUtil: DiffUtil.DiffResult? = null
-    private var lastJob: Job? = null
-
-    private val supervisorJob = SupervisorJob()
-    override val coroutineContext: CoroutineContext = Dispatchers.Main + supervisorJob
-
-    open fun setData(fresh: List<ItemType>, adapter: RecyclerView.Adapter<*>) {
-        clearLastJob()
-
-        val itemsAdapter = adapter as ItemsBinderAdapter<ItemType>
-        oldData = itemsAdapter.getAdapterItems()
-        newData = fresh
-        lastJob = launch {
-            //val startTime = System.currentTimeMillis()
-            //println("-----> start processing ")
-            lastDiffUtil = processCalculationAsync()
-            lastDiffUtil?.let {
-                itemsAdapter.setAdapterItems(fresh)
-                it.dispatchUpdatesTo(adapter)
-                //val finishTime = System.currentTimeMillis() - startTime
-                //println("-----> finish processing in ${finishTime}ms")
-            }
-        }
-    }
-
-    protected open fun clearLastJob() {
-        lastDiffUtil = null
-        lastJob?.cancel()
-        lastJob = null
-        supervisorJob.cancelChildren()
-    }
-
-    protected open suspend fun processCalculationAsync() = withContext(Dispatchers.Default) {
-        DiffUtil.calculateDiff(this@DiffCallback)
-    }
-
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return areContentsTheSame(
-            oldData?.getOrNull(oldItemPosition),
-            newData?.getOrNull(newItemPosition)
-        )
-    }
-
-    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return areItemsTheSame(
-            oldData?.getOrNull(oldItemPosition),
-            newData?.getOrNull(newItemPosition)
-        )
-    }
-
-    open fun areContentsTheSame(oldItem: ItemType?, newItem: ItemType?): Boolean {
-        return if (oldItem != null && newItem != null) {
-            oldItem == newItem
-        } else if (oldItem == null && newItem == null) {
-            return true
-        } else {
-            throw AssertionError()
-        }
-    }
-
-    open fun areItemsTheSame(oldItem: ItemType?, newItem: ItemType?): Boolean {
-        return if (oldItem != null && newItem != null) {
-            oldItem == newItem
-        } else {
-            oldItem == null && newItem == null
-        }
-    }
-
-    override fun getOldListSize(): Int {
-        return oldData?.size ?: 0
-    }
-
-    override fun getNewListSize(): Int {
-        return newData?.size ?: 0
-    }
-
-    open fun clear() {
-        clearLastJob()
-        oldData = null
-        newData = null
     }
 }
 
+enum class BindingAdapterType {
+    STANDARD, PAGING
+}
 
 data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val layoutId: Int,
     val itemId: Int,
+    val adapterType: BindingAdapterType = BindingAdapterType.STANDARD,
     val orientation: Int = RecyclerView.VERTICAL,
     val consumeLongClick: Boolean = true,
     val doubleClickDelayTime: Long = 150L,
-    val clickDebounceInterval: Long = 400L,
     val lifecycleOwner: LifecycleOwner? = null,
     val realisation: DataBindingAdapter<BindingType>? = null,
     val onItemClickListener: OnRecyclerItemClickListener? = null,
@@ -336,14 +369,17 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val itemAnimator: RecyclerView.ItemAnimator? = null,
     val itemDecorator: List<RecyclerView.ItemDecoration>? = null,
     val diffUtilCallback: DiffCallback<*>?,
+    val diffItemsUtilCallback: DiffItemsCallback<*>?,
     val hasFixedSize: Boolean = true,
-    val isLifecyclePending: Boolean = false
+    val isLifecyclePending: Boolean = false,
+    val scrollPosition: ScrollPosition? = null
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
         var layoutId: Int? = null
         var itemId: Int? = null
         var doubleClickDelayTime: Long = 150L
+        var adapterType: BindingAdapterType = BindingAdapterType.STANDARD
         var consumeLongClick: Boolean = true
         var lifecycleOwner: LifecycleOwner? = null
         var onItemCreate: ((BT) -> Unit)? = null
@@ -359,14 +395,17 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var itemAnimator: RecyclerView.ItemAnimator? = null
         var itemDecorator: List<RecyclerView.ItemDecoration>? = null
         var diffUtilCallback: DiffCallback<*>? = null
+        var diffItemUtilCallback: DiffItemsCallback<I>? = null
         var hasFixedSize: Boolean = true
         var isLifecyclePending: Boolean = false
+        var scrollPosition: ScrollPosition? = null
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
                 layoutId = layoutId ?: -1,
                 itemId = itemId
                     ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
+                adapterType = adapterType,
                 lifecycleOwner = lifecycleOwner,
                 orientation = orientation,
                 doubleClickDelayTime = doubleClickDelayTime,
@@ -377,8 +416,10 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 itemAnimator = itemAnimator,
                 itemDecorator = itemDecorator,
                 diffUtilCallback = diffUtilCallback,
+                diffItemsUtilCallback = diffItemUtilCallback as? DiffItemsCallback<I>,
                 hasFixedSize = hasFixedSize,
                 isLifecyclePending = isLifecyclePending,
+                scrollPosition = scrollPosition,
                 realisation = object : DataBindingAdapter<BT> {
 
                     override fun onCreate(binding: BT) {
@@ -425,172 +466,58 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     }
 }
 
-inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit): DataBindingRecyclerViewConfig<BT> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
-        .build().also {
-            if (it.layoutId == -1) {
-                throw IllegalStateException("layoutId is not set for viewHolders adapter")
-            }
-        }
-}
+internal class DataBindingPagingDataAdapter<ItemType : Any, BindingType : ViewDataBinding>(
+    private val erbAdapter: ErbAdapter<ItemType, BindingType>,
+    val diffUtilCallback: DiffItemsCallback<ItemType>
+) : PagingDataAdapter<ItemType, BindingViewHolder>(diffUtilCallback),
+    IErbAdapter<ItemType, BindingType> by erbAdapter {
 
-inline fun recyclerMultiConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit): DataBindingRecyclerViewConfig<ViewDataBinding> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>()
-        .apply(block).build()
-}
-
-internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
-    private var items: List<ItemType>,
-    private val layoutId: Int,
-    private val itemId: Int,
-    private val doubleClickDelayTime: Long = 150L,
-    private val consumeLongClick: Boolean = true,
-    private val isLifecyclePending: Boolean = false,
-    private val lifecycleOwner: LifecycleOwner? = null,
-    private val realisation: DataBindingAdapter<BindingType>? = null,
-    private val onItemClickListener: OnRecyclerItemClickListener? = null,
-    private val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
-    private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
-) : RecyclerView.Adapter<DataBindingRecyclerAdapter.BindingViewHolder>(),
-    DataBindingAdapter<BindingType>, ItemsBinderAdapter<ItemType> {
-
-    private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
-    private var layoutInflater: WeakReference<LayoutInflater>? = null
-
-    override fun getItemCount(): Int = items.size
-
-    override fun setAdapterItems(items: List<ItemType>) {
-        this.items = items
-    }
-
-    override fun getAdapterItems(): List<ItemType> {
-        return this.items
+    override fun getItemCount(): Int {
+        return erbAdapter.getItemCount()
     }
 
     override fun getItemViewType(position: Int): Int {
-        val viewType = layoutId.takeIf { it != -1 }
-            ?: (items.getOrNull(position) as? IBindingModel)?.layoutResId
-        return viewType ?: throw IllegalStateException(
-            "layoutId is not set for viewHolder with item data ${
-                items.getOrNull(
-                    position
-                )
-            } "
-        )
-    }
-
-    private fun getLifecycleOwner(view: View): LifecycleOwner {
-        return parentFragmentLifecycleOwner?.get() ?: try {
-            view.findFragment<Fragment>().viewLifecycleOwner
-        } catch(e: Exception) {
-            view.context.getOwner<LifecycleOwner>()
-        }.also {
-            parentFragmentLifecycleOwner = WeakReference(it)
-        }
-    }
-
-    private fun getLayoutInflater(context: Context): LayoutInflater {
-        return layoutInflater?.get() ?: LayoutInflater.from(context).apply {
-            layoutInflater = WeakReference(this)
-        }
-    }
-
-    private fun setupLifecycleOwner(binding: ViewDataBinding, parent: ViewGroup) {
-        val bindingLifecycleOwner = binding.lifecycleOwner
-        if (this.lifecycleOwner == null) {
-            if (bindingLifecycleOwner == null && isLifecyclePending) {
-                val parentOwner = try {
-                    getLifecycleOwner(parent)
-                } catch (e: Exception) {
-                    null
-                }
-                binding.lifecycleOwner = parentOwner
-            }
-        } else {
-            if (bindingLifecycleOwner == null) {
-                binding.lifecycleOwner = this.lifecycleOwner
-            }
-        }
+        return erbAdapter.getItemViewType(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
-        val binding = getLayoutInflater(parent.context).createBinding<BindingType>(viewType, parent)
-
-        setupLifecycleOwner(binding, parent)
-        val holder = BindingViewHolder(binding)
-        onCreate(binding)
-
-        val clickListener = object : ViewClickersListener(
-            hasDoubleClickListener = onItemDoubleClickListener != null,
-            doubleClickDelayTime = doubleClickDelayTime,
-            consumeLongClick = consumeLongClick
-        ) {
-
-            override fun onSingleClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemClickListener?.onItemClicked(items[position], position)
-            }
-
-            override fun onDoubleClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemDoubleClickListener?.onItemDoubleClicked(items[position], position)
-            }
-
-            override fun onLongClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemLongClickListener?.onItemLongClicked(items[position], position)
-            }
-        }
-
-        binding.root.apply {
-            if (onItemClickListener != null || onItemDoubleClickListener != null) {
-                setOnClickListener(clickListener)
-            }
-            onItemLongClickListener?.let {
-                setOnLongClickListener(clickListener)
-            }
-        }
-
-        return holder
+        return erbAdapter.onCreateViewHolder(parent, viewType)
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
-        val absolutePosition = holder.absoluteAdapterPosition
-        if (itemId != -1) {
-            holder.binding.apply {
-                setVariable(itemId, items[absolutePosition])
-                // only if custom pending needed and we do not has adapter lifecycleOwner
-                if(lifecycleOwner == null && !isLifecyclePending) {
-                    executePendingBindings()
-                }
-            }
-        }
-        onBind(holder.binding as BindingType, absolutePosition)
+        erbAdapter.onBindViewHolder(holder, position)
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun onViewRecycled(holder: BindingViewHolder) {
-        onUnbind(holder.binding as BindingType)
+        erbAdapter.onViewRecycled(holder)
         super.onViewRecycled(holder)
     }
+}
 
-    override fun onCreate(binding: BindingType) {
-        realisation?.onCreate(binding)
+internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewDataBinding>(
+    private val erbAdapter: ErbAdapter<ItemType, BindingType>
+) : RecyclerView.Adapter<BindingViewHolder>(),
+    IErbAdapter<ItemType, BindingType> by erbAdapter {
+
+    override fun getItemCount(): Int {
+        return erbAdapter.getItemCount()
     }
 
-    override fun onBind(binding: BindingType, position: Int) {
-        realisation?.onBind(binding, position)
+    override fun getItemViewType(position: Int): Int {
+        return erbAdapter.getItemViewType(position)
     }
 
-    override fun onUnbind(binding: BindingType) {
-        realisation?.onUnbind(binding)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
+        return erbAdapter.onCreateViewHolder(parent, viewType)
     }
 
-    class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
-        private val currentBinding: WeakReference<ViewDataBinding> = WeakReference(vb)
-        val binding: ViewDataBinding
-            get() = currentBinding.get() ?: throw NullPointerException("There is no binding for ViewHolder $this")
+    override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
+        erbAdapter.onBindViewHolder(holder, position)
+    }
+
+    override fun onViewRecycled(holder: BindingViewHolder) {
+        erbAdapter.onViewRecycled(holder)
+        super.onViewRecycled(holder)
     }
 }
 
@@ -648,6 +575,20 @@ abstract class ViewClickersListener(
     abstract fun onSingleClicked()
 
     abstract fun onDoubleClicked()
+}
+
+inline fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit): DataBindingRecyclerViewConfig<BT> {
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
+        .build().also {
+            if (it.layoutId == -1) {
+                throw IllegalStateException("layoutId is not set for viewHolders adapter")
+            }
+        }
+}
+
+inline fun recyclerMultiConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit): DataBindingRecyclerViewConfig<ViewDataBinding> {
+    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>()
+        .apply(block).build()
 }
 
 interface OnRecyclerItemClickListener {

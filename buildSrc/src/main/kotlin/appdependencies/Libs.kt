@@ -14,6 +14,7 @@ object Libs {
         const val recyclerView = "androidx.recyclerview:recyclerview:${Versions.recyclerView}"
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutinesAndroid}"
         const val fragment_ktx = "androidx.fragment:fragment-ktx:${Versions.fragment}"
+        const val paging3 = "androidx.paging:paging-runtime:${Versions.paging3}"
 
         // kotlin view model
         const val viewmodelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"

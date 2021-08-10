@@ -43,16 +43,22 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
 
     private fun findFirstVisibleItemPosition(recyclerView: RecyclerView): Int {
         val child = findOneVisibleChild(0, layoutManager.childCount, false, true)
-        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(child)
+        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(
+            child
+        )
     }
 
     private fun findLastVisibleItemPosition(recyclerView: RecyclerView): Int {
         val child = findOneVisibleChild(recyclerView.childCount - 1, -1, false, true)
-        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(child)
+        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(
+            child
+        )
     }
 
-    private fun findOneVisibleChild(fromIndex: Int, toIndex: Int, completelyVisible: Boolean,
-                                    acceptPartiallyVisible: Boolean): View? {
+    private fun findOneVisibleChild(
+        fromIndex: Int, toIndex: Int, completelyVisible: Boolean,
+        acceptPartiallyVisible: Boolean
+    ): View? {
         if (layoutManager.canScrollVertically() != isOrientationHelperVertical || orientationHelper == null) {
             isOrientationHelperVertical = layoutManager.canScrollVertically()
             orientationHelper = if (isOrientationHelperVertical)
@@ -100,7 +106,10 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
             }
 
             if (visibleThreshold == RecyclerView.NO_POSITION) {
-                visibleThreshold = findLastVisibleItemPosition(recyclerView) - findFirstVisibleItemPosition(recyclerView)
+                visibleThreshold =
+                    findLastVisibleItemPosition(recyclerView) - findFirstVisibleItemPosition(
+                        recyclerView
+                    )
             }
 
             visibleItemCount = recyclerView.childCount
@@ -113,13 +122,15 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
                     previousTotal = totalItemCount
                 }
             }
-            if (!isLoading && totalItemCount - visibleItemCount <= firstVisibleItem + visibleThreshold) {
+            if (!isLoading) {
+                val topPad = (totalItemCount - visibleItemCount)
+                val botPad = (firstVisibleItem + visibleThreshold)
+                if (topPad <= botPad) {
+                    currentPage++
+                    onLoadMore(currentPage)
 
-                currentPage++
-
-                onLoadMore(currentPage)
-
-                isLoading = true
+                    isLoading = true
+                }
             }
         }
     }
@@ -137,9 +148,16 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
     @JvmOverloads
     fun resetPageCount(page: Int = 0) {
         previousTotal = 0
-        isLoading = true
+        isLoading = false
         currentPage = page
-        onLoadMore(currentPage)
+    }
+
+    fun resetTotalCount(total: Int) {
+        //println("----> previous = $previousTotal | total = $total")
+        if (previousTotal != 0 && previousTotal != total) {
+            previousTotal = total
+            isLoading = total > visibleThreshold
+        }
     }
 
     abstract fun onLoadMore(currentPage: Int)

@@ -1,11 +1,14 @@
 package com.rasalexman.erb.ui.viewpager2example.pages
 
 import androidx.lifecycle.*
+import androidx.paging.PagingData
 import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
+import com.rasalexman.easyrecyclerbinding.recyclerConfig
 import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
+import com.rasalexman.erb.databinding.ItemRecyclerBinding
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
@@ -39,6 +42,8 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         }
     }
 
+    val pagingItems: MutableLiveData<PagingData<IRecyclerItem>> = MutableLiveData()
+
     fun onQueryTextChanged(newText: String) {
         searchQuery.postValue(newText)
     }
@@ -53,18 +58,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                 MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
         }
 
-        //isLifecyclePending = false
+        //isLifecyclePending = true
 
         diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
-                oldItem: IRecyclerItem?,
-                newItem: IRecyclerItem?
+                oldItem: IRecyclerItem,
+                newItem: IRecyclerItem
             ): Boolean {
-                return if (oldItem != null && newItem != null) {
-                    oldItem.id == newItem.id
-                } else {
-                    oldItem == null && newItem == null
-                }
+                return oldItem.id == newItem.id
             }
         }
     }
@@ -84,7 +85,8 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     fun onAddButtonClicked() {
         val minItems = Random.nextInt(100, 500)
         val maxItems = Random.nextInt(500, 10000)
-        addItems(minItems, maxItems)
+        val isFirst = minItems%2 == 0
+        addItems(minItems, maxItems, isFirst)
     }
 
     override suspend fun itemsCreator(position: Int): IRecyclerItem {
