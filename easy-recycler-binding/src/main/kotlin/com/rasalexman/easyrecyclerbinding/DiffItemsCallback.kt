@@ -22,15 +22,18 @@ open class DiffItemsCallback<ItemType : Any>(
 
     override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
     @Suppress("UNCHECKED_CAST")
-    override fun setPageData(pagerData: PagingData<ItemType>, adapter: RecyclerView.Adapter<*>) {
+    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) {
         clear()
-        lastJob = lifecycleOwnerWeak.get()?.run {
-            lifecycleScope.launch {
-                (adapter as? PagingDataAdapter<ItemType, BindingViewHolder>)?.submitData(lifecycle, pagerData)
+        pagerData?.let { freshPagingData ->
+            lastJob = lifecycleOwnerWeak.get()?.run {
+                lifecycleScope.launch {
+                    (adapter as? PagingDataAdapter<ItemType, BindingViewHolder>)?.submitData(lifecycle, freshPagingData)
+                }
+            } ?: launch {
+                (adapter as? PagingDataAdapter<ItemType, BindingViewHolder>)?.submitData(freshPagingData)
             }
-        } ?: launch {
-            (adapter as? PagingDataAdapter<ItemType, BindingViewHolder>)?.submitData(pagerData)
         }
+
     }
 
     override fun clear() {

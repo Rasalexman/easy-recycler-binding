@@ -22,13 +22,13 @@ open class BaseDiffCallback<ItemType : Any> : ISetData<ItemType>, CoroutineScope
     }
 
     override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
-    override fun setPageData(pagerData: PagingData<ItemType>, adapter: RecyclerView.Adapter<*>) = Unit
+    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
 }
 
 interface IDiffCallback
 
 interface ISetData<ItemType : Any> : IDiffCallback {
-    fun setPageData(pagerData: PagingData<ItemType>, adapter: RecyclerView.Adapter<*>)
+    fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>)
     fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>)
     fun clear()
 }

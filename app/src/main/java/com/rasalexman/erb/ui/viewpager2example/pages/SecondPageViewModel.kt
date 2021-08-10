@@ -60,14 +60,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
         //isLifecyclePending = true
 
-        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
                 oldItem: IRecyclerItem,
                 newItem: IRecyclerItem
             ): Boolean {
                 return oldItem.id == newItem.id
             }
-        }
+        }*/
     }
 
     fun onClearButtonClicked() {

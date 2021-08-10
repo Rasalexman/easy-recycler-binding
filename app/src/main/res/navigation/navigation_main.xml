@@ -20,6 +20,10 @@
             android:id="@+id/showViewPager2Fragment"
             app:destination="@id/vp2Fragment"/>
 
+        <action
+            android:id="@+id/showPagingFragment"
+            app:destination="@id/pagingFragment"/>
+
     </fragment>
 
     <fragment
@@ -36,6 +40,11 @@
         android:id="@+id/vp2Fragment"
         android:name="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleFragment"
         android:label="ViewPager2ExampleFragment" />
+
+    <fragment
+        android:id="@+id/pagingFragment"
+        android:name="com.rasalexman.erb.ui.paging.PagingFragment"
+        android:label="PagingFragment" />
 
     <fragment
         android:id="@+id/selectedFragment"

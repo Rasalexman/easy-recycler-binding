@@ -17,7 +17,7 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
     private val supervisorJob = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + supervisorJob
 
-    override fun setPageData(pagerData: PagingData<ItemType>, adapter: RecyclerView.Adapter<*>) = Unit
+    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
 
     override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) {
         clearLastJob()

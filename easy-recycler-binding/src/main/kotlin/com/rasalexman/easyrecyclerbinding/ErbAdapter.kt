@@ -15,6 +15,7 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     private var items: List<ItemType>,
     private val layoutId: Int,
     private val itemId: Int,
+    private val scrollPosition: ScrollPosition? = null,
     private val doubleClickDelayTime: Long = 150L,
     private val consumeLongClick: Boolean = true,
     private val isLifecyclePending: Boolean = false,

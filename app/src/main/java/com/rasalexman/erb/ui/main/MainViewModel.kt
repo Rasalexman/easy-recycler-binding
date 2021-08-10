@@ -15,4 +15,8 @@ class MainViewModel : BaseViewModel() {
     fun onRvButtonClicked() {
         navigationState.value = MainFragmentDirections.showRecyclerViewFragment()
     }
+
+    fun onPagingButtonClicked() {
+        navigationState.value = MainFragmentDirections.showPagingFragment()
+    }
 }

@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -93,12 +94,13 @@ fun getSelectedPosition(viewPager: ViewPager2): Int {
     return viewPager.currentItem
 }
 
-@BindingAdapter(value = ["items", "rv_config", "position", "visibleThreshold"], requireAll = false)
+@BindingAdapter(value = ["items", "rv_config", "position", "pages", "visibleThreshold"], requireAll = false)
 fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView: RecyclerView,
-    newItems: List<ItemType>?,
+    newItems: List<ItemType>? = null,
     dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
     scrollPosition: ScrollPosition? = null,
+    pagingData: PagingData<ItemType>? = null,
     visibleThreshold: Int = RecyclerView.NO_POSITION
 ) {
 
@@ -108,6 +110,8 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
     val oldItems: MutableList<ItemType> =
         recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
+
+    val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
 
     if (recyclerView.adapter == null) {
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
@@ -134,21 +138,24 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
                         false
                     )
             recyclerView.layoutManager = mLayoutManager
-            // first clear all listeners
-            recyclerView.clearOnScrollListeners()
 
-            // custom listener
-            dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
-                scrollListener = object :
-                    EndlessRecyclerOnScrollListener(mLayoutManager, visibleThreshold) {
-                    override fun onLoadMore(currentPage: Int) {
-                        onLoadMoreHandler(currentPage)
-                    }
-                }.apply(recyclerView::addOnScrollListener)
-            } ?:
-            // or check another scroll listener scroll listener
-            dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
-                recyclerView.addOnScrollListener(it)
+
+            if(isStandardAdapter) {
+                // first clear all listeners
+                recyclerView.clearOnScrollListeners()
+                // custom listener
+                dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
+                    scrollListener = object :
+                        EndlessRecyclerOnScrollListener(mLayoutManager, visibleThreshold) {
+                        override fun onLoadMore(currentPage: Int) {
+                            onLoadMoreHandler(currentPage)
+                        }
+                    }.apply(recyclerView::addOnScrollListener)
+                } ?:
+                // or check another scroll listener scroll listener
+                dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
+                    recyclerView.addOnScrollListener(it)
+                }
             }
         }
 
@@ -161,7 +168,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         }
 
         recyclerView.adapter =
-            dataBindingRecyclerViewConfig.createAdapter(oldItems).also { adapter ->
+            dataBindingRecyclerViewConfig.createAdapter(oldItems, scrollPosition).also { adapter ->
                 scrollListener?.let { listener ->
                     adapter.registerAdapterDataObserver(object :
                         RecyclerView.AdapterDataObserver() {
@@ -199,6 +206,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView.adapter?.applyAdapterData(
         oldItems = oldItems,
         newItems = newItems,
+        pagingData = pagingData as? PagingData<Any>,
         dataBindingRecyclerViewConfig = dataBindingRecyclerViewConfig
     )
     scrollPosition?.let {
@@ -213,35 +221,20 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     }
 }
 
-internal class ScrollPositionObserver(
-    lifecycleOwner: LifecycleOwner,
-    recyclerView: RecyclerView,
-    scrollPosition: ScrollPosition
-) : LifecycleObserver {
 
-    private val ownerWeakRef = WeakReference(lifecycleOwner)
-    private val recyclerWeakRef = WeakReference<RecyclerView>(recyclerView)
-    private val scrollWeakRef = WeakReference(scrollPosition)
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onSaveScroll() {
-        scrollWeakRef.get()?.let { scrollPosition ->
-            recyclerWeakRef.get()?.let { currentRV ->
-                currentRV.stopScroll()
-                scrollPosition.apply {
-                    index = (currentRV.layoutManager as? LinearLayoutManager?)?.findFirstVisibleItemPosition() ?: 0
-                    top = currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
-                }
-            }
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-        ownerWeakRef.get()?.lifecycle?.removeObserver(this)
-        ownerWeakRef.clear()
-        scrollWeakRef.clear()
-        recyclerWeakRef.clear()
+fun<ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<RecyclerView.ViewHolder>.applyAdapterData(
+    oldItems: MutableList<ItemType>,
+    newItems: List<ItemType>?,
+    pagingData: PagingData<Any>? = null,
+    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
+) {
+    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<Any>
+    val diffItemsCallback = dataBindingRecyclerViewConfig.diffItemsUtilCallback as? DiffItemsCallback<Any>
+    when {
+        diffCallback != null -> diffCallback.setData(newItems, this)
+        diffItemsCallback != null -> diffItemsCallback.setPageData(pagingData, this)
+        else -> applyData(this, oldItems, newItems)
     }
 }
 
@@ -249,7 +242,8 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
     dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
 ): MutableList<ItemType> {
     var oldItems: MutableList<ItemType>? = null
-    if (dataBindingRecyclerViewConfig.diffUtilCallback == null) {
+    val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
+    if (isStandardAdapter && dataBindingRecyclerViewConfig.diffUtilCallback == null) {
         this.tag?.let {
             @Suppress("UNCHECKED_CAST")
             oldItems = it as? MutableList<ItemType>
@@ -263,22 +257,14 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
     return oldItems ?: mutableListOf()
 }
 
-fun<ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<RecyclerView.ViewHolder>.applyAdapterData(
-    oldItems: MutableList<ItemType>,
-    newItems: List<ItemType>?,
-    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
-) {
-    val diffCallback = dataBindingRecyclerViewConfig.diffUtilCallback as? DiffCallback<Any>
-    diffCallback?.setData(newItems, this)
-        ?: applyData(this, oldItems, newItems)
-}
-
 @Suppress("UNCHECKED_CAST")
 private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
-    items: List<ItemType>
+    items: List<ItemType>,
+    scrollPosition: ScrollPosition? = null
 ): RecyclerView.Adapter<BindingViewHolder> {
     val erbAdapter = ErbAdapter(
         items = items,
+        scrollPosition = scrollPosition,
         lifecycleOwner = this.lifecycleOwner,
         layoutId = this.layoutId,
         itemId = this.itemId,
@@ -347,6 +333,38 @@ private fun <ItemType : Any> applyData(
     }
 }
 
+internal class ScrollPositionObserver(
+    lifecycleOwner: LifecycleOwner,
+    recyclerView: RecyclerView,
+    scrollPosition: ScrollPosition
+) : LifecycleObserver {
+
+    private val ownerWeakRef = WeakReference(lifecycleOwner)
+    private val recyclerWeakRef = WeakReference<RecyclerView>(recyclerView)
+    private val scrollWeakRef = WeakReference(scrollPosition)
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onSaveScroll() {
+        scrollWeakRef.get()?.let { scrollPosition ->
+            recyclerWeakRef.get()?.let { currentRV ->
+                currentRV.stopScroll()
+                scrollPosition.apply {
+                    index = (currentRV.layoutManager as? LinearLayoutManager?)?.findFirstVisibleItemPosition() ?: 0
+                    top = currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
+                }
+            }
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy() {
+        ownerWeakRef.get()?.lifecycle?.removeObserver(this)
+        ownerWeakRef.clear()
+        scrollWeakRef.clear()
+        recyclerWeakRef.clear()
+    }
+}
+
 enum class BindingAdapterType {
     STANDARD, PAGING
 }
@@ -371,8 +389,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val diffUtilCallback: DiffCallback<*>?,
     val diffItemsUtilCallback: DiffItemsCallback<*>?,
     val hasFixedSize: Boolean = true,
-    val isLifecyclePending: Boolean = false,
-    val scrollPosition: ScrollPosition? = null
+    val isLifecyclePending: Boolean = false
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -398,7 +415,6 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var diffItemUtilCallback: DiffItemsCallback<I>? = null
         var hasFixedSize: Boolean = true
         var isLifecyclePending: Boolean = false
-        var scrollPosition: ScrollPosition? = null
 
         fun build(): DataBindingRecyclerViewConfig<BT> {
             return DataBindingRecyclerViewConfig(
@@ -419,7 +435,6 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 diffItemsUtilCallback = diffItemUtilCallback as? DiffItemsCallback<I>,
                 hasFixedSize = hasFixedSize,
                 isLifecyclePending = isLifecyclePending,
-                scrollPosition = scrollPosition,
                 realisation = object : DataBindingAdapter<BT> {
 
                     override fun onCreate(binding: BT) {
