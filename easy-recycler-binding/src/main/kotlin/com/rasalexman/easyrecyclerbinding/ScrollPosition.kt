@@ -5,6 +5,10 @@ data class ScrollPosition(var index: Int = 0, var top: Int = 0) {
         index = 0
         top = 0
     }
+
+    fun isNotEmpty(): Boolean {
+        return index != 0 && top != 0
+    }
 }
 
 /*

@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.IntRange
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
@@ -15,10 +16,9 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     private var items: List<ItemType>,
     private val layoutId: Int,
     private val itemId: Int,
-    private val scrollPosition: ScrollPosition? = null,
-    private val doubleClickDelayTime: Long = 150L,
+    private val doubleClickDelayTime: Long = 200L,
     private val consumeLongClick: Boolean = true,
-    private val isLifecyclePending: Boolean = false,
+    private val isLifecyclePending: Boolean = true,
     private val lifecycleOwner: LifecycleOwner? = null,
     private val realisation: DataBindingAdapter<BindingType>? = null,
     private val onItemClickListener: OnRecyclerItemClickListener? = null,
@@ -26,10 +26,15 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
 ) : IErbAdapter<ItemType, BindingType> {
 
+    var onGetItemHandler: ((Int) -> ItemType?)? = null
+    var onGetItemsCountHandler: (() -> Int)? = null
+
     private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
     private var layoutInflater: WeakReference<LayoutInflater>? = null
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int {
+        return onGetItemsCountHandler?.invoke() ?: items.size
+    }
 
     override fun setAdapterItems(items: List<ItemType>) {
         this.items = items
@@ -39,15 +44,15 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         return this.items
     }
 
+    override fun getAdapterItem(position: Int): ItemType? {
+        return onGetItemHandler?.invoke(position) ?: this.items.getOrNull(position)
+    }
+
     override fun getItemViewType(position: Int): Int {
         val viewType = layoutId.takeIf { it != -1 }
-            ?: (items.getOrNull(position) as? IBindingModel)?.layoutResId
+            ?: (getAdapterItem(position) as? IBindingModel)?.layoutResId
         return viewType ?: throw IllegalStateException(
-            "layoutId is not set for viewHolder with item data ${
-                items.getOrNull(
-                    position
-                )
-            } "
+            "layoutId is not set for viewHolder with item data position = $position"
         )
     }
 
@@ -95,18 +100,24 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         ) {
 
             override fun onSingleClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemClickListener?.onItemClicked(items[position], position)
+                onItemClickListener?.apply {
+                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
+                    onItemClicked(getAdapterItem(position), position)
+                }
             }
 
             override fun onDoubleClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemDoubleClickListener?.onItemDoubleClicked(items[position], position)
+                onItemDoubleClickListener?.apply {
+                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
+                    onItemDoubleClicked(getAdapterItem(position), position)
+                }
             }
 
             override fun onLongClicked() {
-                val position = holder.absoluteAdapterPosition
-                onItemLongClickListener?.onItemLongClicked(items[position], position)
+                onItemLongClickListener?.apply {
+                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
+                    onItemLongClicked(getAdapterItem(position), position)
+                }
             }
         }
 
@@ -124,15 +135,29 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
 
     @Suppress("UNCHECKED_CAST")
     override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
-        val absolutePosition = holder.absoluteAdapterPosition
+        val absolutePosition = getViewHolderPosition(holder, position)
         val localBinding = holder.binding
-        if (itemId != -1) {
-            localBinding.setVariable(itemId, items[absolutePosition])
-            if (localBinding.lifecycleOwner == null && !isLifecyclePending) {
-                localBinding.executePendingBindings()
-            }
+        val item = getAdapterItem(absolutePosition)
+        if (itemId != -1 && item != null) {
+            localBinding.setVariable(itemId, item)
+            onBind(localBinding as BindingType, absolutePosition)
         }
-        onBind(localBinding as BindingType, absolutePosition)
+
+        if (localBinding.lifecycleOwner == null && !isLifecyclePending) {
+            localBinding.executePendingBindings()
+        } else if(isLifecyclePending) {
+            localBinding.executePendingBindings()
+        }
+    }
+
+    private fun getViewHolderPosition(holder: BindingViewHolder, position: Int): Int {
+        val absolutePosition = holder.absoluteAdapterPosition
+        val itemsCount = getItemCount()
+        return if(itemsCount < absolutePosition) {
+            position
+        } else {
+            absolutePosition
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -151,6 +176,15 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     override fun onUnbind(binding: BindingType) {
         realisation?.onUnbind(binding)
     }
+
+    override fun clearAdapter() {
+        onGetItemHandler = null
+        onGetItemsCountHandler = null
+        layoutInflater?.clear()
+        parentFragmentLifecycleOwner?.clear()
+        layoutInflater = null
+        parentFragmentLifecycleOwner = null
+    }
 }
 
 class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
@@ -163,9 +197,23 @@ class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) 
 interface IErbAdapter<ItemType : Any, BindingType : ViewDataBinding> :
     DataBindingAdapter<BindingType>, ItemsBinderAdapter<ItemType> {
 
+    fun getAdapterItem(@IntRange(from = 0) position: Int): ItemType?
     fun getItemViewType(position: Int): Int
     fun getItemCount(): Int
     fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder
     fun onViewRecycled(holder: BindingViewHolder)
     fun onBindViewHolder(holder: BindingViewHolder, position: Int)
+
+    fun clearAdapter()
+}
+
+interface DataBindingAdapter<BindingType : ViewDataBinding> {
+    fun onCreate(binding: BindingType)
+    fun onBind(binding: BindingType, position: Int)
+    fun onUnbind(binding: BindingType)
+}
+
+interface ItemsBinderAdapter<ItemType : Any> {
+    fun setAdapterItems(items: List<ItemType>)
+    fun getAdapterItems(): List<ItemType>
 }

@@ -122,6 +122,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.material)
     implementation(appdependencies.Libs.Core.livedataKtx)
     implementation(appdependencies.Libs.Core.viewmodelKtx)
+    implementation(appdependencies.Libs.Core.paging3)
     //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
     debugImplementation(Libs.Tests.leakCanary)

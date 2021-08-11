@@ -81,7 +81,7 @@ dependencies {
     implementation(appdependencies.Libs.Core.recyclerView)
     implementation(appdependencies.Libs.Core.coroutines)
     implementation(appdependencies.Libs.Core.fragment_ktx)
-    api(appdependencies.Libs.Core.paging3)
+    implementation(appdependencies.Libs.Core.paging3)
 }
 
 group = "com.rasalexman.easyrecyclerbinding"

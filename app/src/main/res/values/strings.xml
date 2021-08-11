@@ -9,6 +9,7 @@
 
     <string name="button_title_sing_in">Sing in</string>
     <string name="button_title_sing_up">Sing up</string>
+    <string name="button_title_retry">Retry</string>
 
     <string name="button_clear">Clear</string>
     <string name="button_generate">Generate</string>

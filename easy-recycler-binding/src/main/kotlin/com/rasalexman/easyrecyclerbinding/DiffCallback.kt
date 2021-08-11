@@ -41,7 +41,7 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
 
     }
 
-    protected open fun clearLastJob() {
+    override fun clearLastJob() {
         lastDiffUtil = null
         lastJob?.cancel()
         lastJob = null

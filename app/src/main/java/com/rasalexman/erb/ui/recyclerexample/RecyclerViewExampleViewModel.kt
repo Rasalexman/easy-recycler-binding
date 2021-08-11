@@ -7,7 +7,7 @@ import com.rasalexman.erb.ui.main.MainFragmentDirections
 
 class RecyclerViewExampleViewModel : BaseItemsViewModel() {
 
-    fun onShowVP2Fragment(item: IBindingModel) {
+    fun onShowSelectedItemFragment(item: IBindingModel) {
         (item as? IRecyclerItem)?.let {
             navigationState.value = MainFragmentDirections.showSelectedFragment(selectedItem = it.title)
         }

@@ -44,12 +44,11 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
         super.initBinding(binding)
         binding.rvConfig = createRecyclerMultiConfig {
             itemId = BR.item
-            //needPending = false
 
             onItemClick = { item: IBindingModel, pos: Int ->
                 println("onItemClick Position = $pos")
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
-                viewModel.onShowVP2Fragment(item)
+                viewModel.onShowSelectedItemFragment(item)
             }
             onItemLongClickListener = { item: IBindingModel, pos: Int ->
                 println("onItemLongClickListener Position = $pos")

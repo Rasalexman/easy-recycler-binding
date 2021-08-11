@@ -42,8 +42,6 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         }
     }
 
-    val pagingItems: MutableLiveData<PagingData<IRecyclerItem>> = MutableLiveData()
-
     fun onQueryTextChanged(newText: String) {
         searchQuery.postValue(newText)
     }
@@ -60,14 +58,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
         //isLifecyclePending = true
 
-        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
                 oldItem: IRecyclerItem,
                 newItem: IRecyclerItem
             ): Boolean {
                 return oldItem.id == newItem.id
             }
-        }*/
+        }
     }
 
     fun onClearButtonClicked() {

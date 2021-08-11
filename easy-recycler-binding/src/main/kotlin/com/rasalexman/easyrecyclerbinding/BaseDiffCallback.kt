@@ -15,7 +15,7 @@ open class BaseDiffCallback<ItemType : Any> : ISetData<ItemType>, CoroutineScope
         clearLastJob()
     }
 
-    private fun clearLastJob() {
+    override fun clearLastJob() {
         lastJob?.cancel()
         lastJob = null
         supervisorJob.cancelChildren()
@@ -31,4 +31,5 @@ interface ISetData<ItemType : Any> : IDiffCallback {
     fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>)
     fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>)
     fun clear()
+    fun clearLastJob()
 }
