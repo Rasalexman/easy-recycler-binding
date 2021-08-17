@@ -1,6 +1,7 @@
+@file:Suppress("UNCHECKED_CAST")
 package com.rasalexman.easyrecyclerbinding
 
-import android.app.Activity
+
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -273,7 +274,6 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
     return oldItems ?: mutableListOf()
 }
 
-@Suppress("UNCHECKED_CAST")
 private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
     items: List<ItemType>
 ): RecyclerView.Adapter<*> {
@@ -596,7 +596,6 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                     }
                 },
                 onItemLongClickListener = object : OnRecyclerItemLongClickListener {
-                    @Suppress("UNCHECKED_CAST")
                     override fun <T : Any> onItemLongClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {

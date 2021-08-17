@@ -74,14 +74,13 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+    compileOnly(kotlin("stdlib-jdk8", Versions.kotlin))
 
-    implementation(appdependencies.Libs.Core.coreKtx)
-    implementation(appdependencies.Libs.Core.viewPager2)
-    implementation(appdependencies.Libs.Core.recyclerView)
-    implementation(appdependencies.Libs.Core.coroutines)
-    implementation(appdependencies.Libs.Core.fragment_ktx)
-    implementation(appdependencies.Libs.Core.paging3)
+    compileOnly(appdependencies.Libs.Core.viewPager2)
+    compileOnly(appdependencies.Libs.Core.recyclerView)
+    compileOnly(appdependencies.Libs.Core.coroutines)
+    compileOnly(appdependencies.Libs.Core.fragment_ktx)
+    compileOnly(appdependencies.Libs.Core.paging3)
 }
 
 group = "com.rasalexman.easyrecyclerbinding"

@@ -19,6 +19,7 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
 
     override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
 
+    @Suppress("UNCHECKED_CAST")
     override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) {
         clearLastJob()
 
