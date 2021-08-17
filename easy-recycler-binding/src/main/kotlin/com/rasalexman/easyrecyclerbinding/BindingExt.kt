@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 
@@ -103,6 +104,12 @@ fun <I : Any, BT : ViewDataBinding> getRecyclerConfigBuilder(
     return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
 }
 
+fun Context.findPrimaryFragment(): Fragment? {
+    return (this as? FragmentActivity)?.run {
+        val frag = supportFragmentManager.fragments
+        frag.lastOrNull()?.childFragmentManager?.primaryNavigationFragment
+    }
+}
 
 /**
  * Inline function to retrieve [Context] owners

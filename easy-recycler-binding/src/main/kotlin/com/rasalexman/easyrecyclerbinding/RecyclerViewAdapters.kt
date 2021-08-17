@@ -122,7 +122,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
     val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
 
-    if (recyclerView.adapter == null) {
+    if (recyclerView.adapter == null && (!newItems.isNullOrEmpty() || pagingData != null)) {
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
 
         var scrollListener: EndlessRecyclerOnScrollListener? = null
@@ -172,7 +172,9 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
                 ?: recyclerView.findFragment<Fragment>().viewLifecycleOwner
         } catch (e: Exception) {
             println("[ERROR]: error with recyclerView.findFragment = $e")
-            recyclerView.context.getOwner<LifecycleOwner>()
+            recyclerView.context.run {
+                findPrimaryFragment()?.viewLifecycleOwner ?: getOwner<LifecycleOwner>()
+            }
         }
 
         lifecycleOwner?.apply {
