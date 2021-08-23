@@ -1,3 +1,4 @@
+@file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate")
 package com.rasalexman.easyrecyclerbinding
 
 import android.view.View
@@ -7,7 +8,6 @@ import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.InverseBindingListener
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 
@@ -31,7 +31,13 @@ fun setupViewPager(
     if (viewPager.adapter == null) {
         viewPager.apply {
             adapter = getViewPagerAdapter(viewPagerSettings)
-            offscreenPageLimit = viewPagerSettings.countTab()
+            val pagesScreenOffset = viewPagerSettings.getDefaultScreenOffset()
+            if(pagesScreenOffset == DEFAULT_CONFIG_PAGES_OFFSET) {
+                offscreenPageLimit = viewPagerSettings.countTab()
+            } else if(pagesScreenOffset >= 0) {
+                offscreenPageLimit = pagesScreenOffset
+            }
+
             tabPosition?.let {
                 if (it != currentItem) {
                     setCurrentItem(it, false)
@@ -83,12 +89,16 @@ interface ViewPagerSettings {
     fun getPagerItemView(container: ViewGroup, position: Int): View
     fun getTextTitle(position: Int): String
     fun countTab(): Int
+    fun getDefaultScreenOffset(): Int
 }
+
+private const val DEFAULT_CONFIG_PAGES_OFFSET = -1
 
 open class ViewPagerConfig(
     private val pageCreator: (container: ViewGroup, position: Int) -> View,
     private val titleCreator: (Int) -> String,
-    private val tabCount: Int
+    private val tabCount: Int,
+    private val defaultOffscreenPages: Int = DEFAULT_CONFIG_PAGES_OFFSET
 ) : ViewPagerSettings {
     override fun getPagerItemView(container: ViewGroup, position: Int): View {
         return pageCreator.invoke(container, position)
@@ -102,10 +112,15 @@ open class ViewPagerConfig(
         return tabCount
     }
 
+    override fun getDefaultScreenOffset(): Int {
+        return defaultOffscreenPages
+    }
+
     class ViewPagerConfigBuilder {
         var pageCreator: ((container: ViewGroup, position: Int) -> View)? = null
         var titleCreator: ((Int) -> String)? = null
         var tabCount: Int? = null
+        var defaultOffscreenPages: Int = DEFAULT_CONFIG_PAGES_OFFSET
 
         fun build(): ViewPagerSettings {
             return ViewPagerConfig(
@@ -114,7 +129,8 @@ open class ViewPagerConfig(
                 titleCreator
                     ?: throw NullPointerException("ViewPagerSettings::titleCreator must not be null"),
                 tabCount
-                    ?: throw NullPointerException("ViewPagerSettings::tabCount must not be null")
+                    ?: throw NullPointerException("ViewPagerSettings::tabCount must not be null"),
+                defaultOffscreenPages = defaultOffscreenPages
             )
         }
     }
@@ -151,6 +167,10 @@ open class DynamicViewPagerConfig(
 
     override fun countTab(): Int {
         return tabCount
+    }
+
+    override fun getDefaultScreenOffset(): Int {
+        return DEFAULT_CONFIG_PAGES_OFFSET
     }
 
     class DynamicViewPagerConfigBuilder {
@@ -218,7 +238,7 @@ internal class DynamicViewPagerAdapter(
     viewPagerSettings: DynamicViewPagerSettings
 ) : ViewPagerAdapter(viewPagerSettings) {
     init {
-        viewPagerSettings.getDynamicData().observe(viewPagerSettings.getLifecycleOwner(), Observer {
+        viewPagerSettings.getDynamicData().observe(viewPagerSettings.getLifecycleOwner(), {
             notifyDataSetChanged()
         })
     }

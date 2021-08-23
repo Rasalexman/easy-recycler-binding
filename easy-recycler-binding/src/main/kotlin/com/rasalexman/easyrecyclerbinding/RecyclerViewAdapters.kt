@@ -1,7 +1,8 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate")
+
 package com.rasalexman.easyrecyclerbinding
 
-
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -56,7 +57,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
     val oldItems: MutableList<ItemType> =
         viewPager.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
-    if (viewPager.adapter == null) {
+    if (viewPager.adapter == null && !newItems.isNullOrEmpty()) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
@@ -122,7 +123,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
     val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
 
-    if (recyclerView.adapter == null && (!newItems.isNullOrEmpty() || pagingData != null)) {
+    if (recyclerView.adapter == null) {
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
 
         var scrollListener: EndlessRecyclerOnScrollListener? = null
@@ -171,7 +172,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             dataBindingRecyclerViewConfig.lifecycleOwner
                 ?: recyclerView.findFragment<Fragment>().viewLifecycleOwner
         } catch (e: Exception) {
-            println("[ERROR]: error with recyclerView.findFragment = $e")
+            //println("[ERROR]: error with recyclerView.findFragment = $e")
             recyclerView.context.run {
                 findPrimaryFragment()?.viewLifecycleOwner ?: getOwner<LifecycleOwner>()
             }
@@ -210,7 +211,6 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     )
 }
 
-@Suppress("UNCHECKED_CAST")
 fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<*>.applyAdapterData(
     oldItems: MutableList<ItemType>,
     newItems: List<ItemType>?,
@@ -235,7 +235,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<*>.appl
     }
 }
 
-@Suppress("UNCHECKED_CAST")
+
 private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.getPagingDiffUtils(
     adapter: DataBindingPagingDataAdapter<ItemType, BindingType>
 ): DiffItemsCallback<ItemType>? {
@@ -243,7 +243,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
         ?: adapter.getItemsDiffCallback()) as? DiffItemsCallback<ItemType>
 }
 
-@Suppress("UNCHECKED_CAST")
+
 private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<*>.getPagingAdapter(): DataBindingPagingDataAdapter<ItemType, BindingType>? {
     return if (this is ConcatAdapter) {
         this.adapters.filterIsInstance<DataBindingPagingDataAdapter<ItemType, BindingType>>()
@@ -251,13 +251,13 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter
     } else this as? DataBindingPagingDataAdapter<ItemType, BindingType>
 }
 
-@Suppress("UNCHECKED_CAST")
+
 private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<*>.clearAdapter() {
     getPagingAdapter<ItemType, BindingType>()?.clearAdapter()
         ?: (this as? DataBindingRecyclerAdapter<ItemType, BindingType>)?.clearAdapter()
 }
 
-@Suppress("UNCHECKED_CAST")
+
 private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldItems(
     dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>
 ): MutableList<ItemType> {
@@ -323,45 +323,57 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerV
     }
 }
 
+@SuppressLint("NotifyDataSetChanged")
 private fun <ItemType : Any> applyData(
     adapter: RecyclerView.Adapter<*>,
     oldItems: MutableList<ItemType>?,
     newItems: List<ItemType>?
 ) {
     if (oldItems !== newItems) {
-        oldItems?.let { old ->
-            val oldSz = old.size
-            val firstItem = if (oldSz > 0) old.first() else null
-            old.clear()
-            newItems?.let { new ->
-                val indFirst = firstItem?.let { new.indexOf(it) } ?: 0
-                val newSz = new.size
-                val diff = newSz - oldSz
-                old.addAll(new)
-                when {
-                    diff > 0 -> {
-                        // adding
-                        val adSz = if (indFirst > 0) 0 else oldSz
-                        adapter.notifyItemRangeInserted(adSz, diff)
-                    }
-                    diff < 0 -> {
-                        val remDiffSz = abs(diff)
-                        // deleting
-                        val remSz = if (indFirst < 0) 0 else (oldSz - remDiffSz - 1)
-                        adapter.notifyItemRangeRemoved(remSz, remDiffSz)
-                    }
-                    else -> {
-                        adapter.notifyDataSetChanged()
+        if (oldItems == null) return
+
+        val oldSz = oldItems.size
+        val firstItem = if (oldSz > 0) oldItems.first() else null
+        oldItems.clear()
+        newItems?.let { new ->
+            val indFirst = firstItem?.let { new.indexOf(it) } ?: 0
+            val newSz = new.size
+            val diff = newSz - oldSz
+            oldItems.addAll(new)
+
+            when {
+                diff > 0 -> {
+                    // adding
+                    val adSz = if (indFirst > 0) 0 else oldSz
+                    adapter.notifyItemRangeInserted(adSz, diff)
+                }
+                diff < 0 -> {
+                    val absDiff = abs(diff)
+                    // deleting
+                    var remSz = if (indFirst < 0) 0 else (oldSz - absDiff)
+                    remSz = if (remSz < 0) 0 else remSz
+                    adapter.notifyItemRangeRemoved(remSz, absDiff)
+                }
+                else -> {
+                    if (newSz != oldSz) {
+                        adapter.notifyItemRangeChanged(0, newSz)
                     }
                 }
-            } ?: adapter.notifyDataSetChanged()
+            }
+            if (oldSz > 0 && indFirst == -1) {
+                adapter.notifyItemRangeChanged(0, newSz)
+            }
         }
     } else {
         oldItems?.let { old ->
+            old.clear()
             newItems?.let {
                 old.addAll(it)
             }
-            adapter.notifyDataSetChanged()
+            val notifySize = old.size
+            if(notifySize > 0) {
+                adapter.notifyItemRangeChanged(0, notifySize)
+            }
         }
     }
 }
@@ -580,7 +592,6 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                     }
                 },
                 onItemClickListener = object : OnRecyclerItemClickListener {
-                    @Suppress("UNCHECKED_CAST")
                     override fun <T : Any> onItemClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {
@@ -589,7 +600,6 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                     }
                 },
                 onItemDoubleClickListener = object : OnRecyclerItemDoubleClickListener {
-                    @Suppress("UNCHECKED_CAST")
                     override fun <T : Any> onItemDoubleClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {

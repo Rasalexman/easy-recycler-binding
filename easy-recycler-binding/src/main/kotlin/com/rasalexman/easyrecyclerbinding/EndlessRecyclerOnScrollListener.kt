@@ -1,3 +1,4 @@
+@file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate", "SameParameterValue")
 package com.rasalexman.easyrecyclerbinding
 
 import android.view.View
@@ -56,7 +57,9 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
     }
 
     private fun findOneVisibleChild(
-        fromIndex: Int, toIndex: Int, completelyVisible: Boolean,
+        fromIndex: Int,
+        toIndex: Int,
+        completelyVisible: Boolean,
         acceptPartiallyVisible: Boolean
     ): View? {
         if (layoutManager.canScrollVertically() != isOrientationHelperVertical || orientationHelper == null) {

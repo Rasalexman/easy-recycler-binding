@@ -1,20 +1,17 @@
 package com.rasalexman.erb.ui.viewpager2example.pages
 
 import androidx.lifecycle.*
-import androidx.paging.PagingData
-import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
-import com.rasalexman.easyrecyclerbinding.recyclerConfig
 import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
-import com.rasalexman.erb.databinding.ItemRecyclerBinding
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
 import com.rasalexman.erb.ui.main.MainFragmentDirections
 import com.rasalexman.erb.ui.viewpager2example.SearchState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -27,8 +24,9 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
     private val searchQuery: MutableLiveData<String> = MutableLiveData<String>("")
 
-    val searchState = MutableLiveData<SearchState>(SearchState.CLOSED)
+    val searchState = MutableLiveData(SearchState.CLOSED)
 
+    @FlowPreview
     val currentItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
         liveData(Dispatchers.Default) {
             searchQuery.asFlow().debounce(200L).distinctUntilChanged().collect { query ->
@@ -58,14 +56,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
         //isLifecyclePending = true
 
-        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
                 oldItem: IRecyclerItem,
                 newItem: IRecyclerItem
             ): Boolean {
                 return oldItem.id == newItem.id
             }
-        }
+        }*/
     }
 
     fun onClearButtonClicked() {
@@ -75,8 +73,8 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     }
 
     fun onGenerateButtonClicked() {
-        val minItems = Random.nextInt(100, 500)
-        val maxItems = Random.nextInt(500, 10000)
+        val minItems = Random.nextInt(10, 100)
+        val maxItems = Random.nextInt(minItems+10, 200)
         createItems(minItems, maxItems)
     }
 

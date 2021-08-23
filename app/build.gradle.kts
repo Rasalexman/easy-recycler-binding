@@ -8,7 +8,6 @@ import appdependencies.Versions
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import resources.Resources.App.dirs
-import resources.Resources.App.javaDirs
 
 plugins {
     id("com.android.application")
@@ -110,20 +109,22 @@ kapt {
 dependencies {
 
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib", Versions.kotlin))
+    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+
+    implementation(Libs.Core.coreKtx)
+    implementation(Libs.Core.fragment_ktx)
+    implementation(Libs.Core.recyclerView)
+    implementation(Libs.Core.constraintlayout)
+    implementation(Libs.Core.navigationFragmentKtx)
+    implementation(Libs.Core.navigationUiKtx)
+    implementation(Libs.Core.viewPager2)
+    implementation(Libs.Core.material)
+    implementation(Libs.Core.livedataKtx)
+    implementation(Libs.Core.viewmodelKtx)
+    implementation(Libs.Core.paging3)
+    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
     implementation(project(":easy-recycler-binding"))
-
-    implementation(appdependencies.Libs.Core.coreKtx)
-    implementation(appdependencies.Libs.Core.constraintlayout)
-    implementation(appdependencies.Libs.Core.navigationFragmentKtx)
-    implementation(appdependencies.Libs.Core.navigationUiKtx)
-    implementation(appdependencies.Libs.Core.viewPager2)
-    implementation(appdependencies.Libs.Core.material)
-    implementation(appdependencies.Libs.Core.livedataKtx)
-    implementation(appdependencies.Libs.Core.viewmodelKtx)
-    implementation(appdependencies.Libs.Core.paging3)
-    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
 
     debugImplementation(Libs.Tests.leakCanary)
     testImplementation(Libs.Tests.junit)

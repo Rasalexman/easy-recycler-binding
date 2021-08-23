@@ -68,7 +68,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                 val itemCounts = if(maxItems == 1) maxItems else Random.nextInt(1, maxItems)
                 val subList = if(atFirst) lastList.take(itemCounts) else lastList.takeLast(itemCounts)
                 lastList.removeAll(subList)
-                println("----> [remove] at first = $atFirst | count = $itemCounts")
+                println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
             }
             items.postValue(lastList)
         }

@@ -50,17 +50,17 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
                 viewModel.onShowSelectedItemFragment(item)
             }
-            onItemLongClickListener = { item: IBindingModel, pos: Int ->
+            onItemLongClickListener = { _, pos: Int ->
                 println("onItemLongClickListener Position = $pos")
                 Toast.makeText(context, "onItemLongClickListener", Toast.LENGTH_SHORT).show()
             }
-            onItemDoubleClicked = { item: IBindingModel, pos: Int ->
+            onItemDoubleClicked = { _, pos: Int ->
                 println("onItemDoubleClicked Position = $pos")
                 Toast.makeText(context, "onItemDoubleClicked", Toast.LENGTH_SHORT).show()
             }
 
             onLoadMore = {
-                viewModel.addItems(atFirst = false)
+                //viewModel.addItems(atFirst = false)
             }
         }
     }

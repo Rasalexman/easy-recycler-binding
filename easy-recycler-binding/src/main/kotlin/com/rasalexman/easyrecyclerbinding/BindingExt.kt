@@ -1,3 +1,4 @@
+@file:Suppress("UNCHECKED_CAST", "unused")
 package com.rasalexman.easyrecyclerbinding
 
 import android.content.Context

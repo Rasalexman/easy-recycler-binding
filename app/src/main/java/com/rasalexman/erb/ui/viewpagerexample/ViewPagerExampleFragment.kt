@@ -27,6 +27,7 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
             pageCreator = ::viewPagerItemsCreator
             titleCreator = ::viewPagerTitleCreator
             tabCount = pageTitles.size
+            defaultOffscreenPages = 0
         }
     }
 
