@@ -22,7 +22,7 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:tabIndicatorColor="@color/colorTabIndicator"
             app:tabTextColor="@color/color_black"

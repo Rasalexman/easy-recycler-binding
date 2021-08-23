@@ -14,7 +14,8 @@ import com.rasalexman.erb.databinding.RvExampleFragmentBinding
 import com.rasalexman.erb.ui.base.BaseBindingFragment
 import kotlin.random.Random
 
-class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding, RecyclerViewExampleViewModel>() {
+class RecyclerViewExampleFragment :
+    BaseBindingFragment<RvExampleFragmentBinding, RecyclerViewExampleViewModel>() {
     override val layoutId: Int get() = R.layout.rv_example_fragment
     override val viewModel: RecyclerViewExampleViewModel by viewModels()
 
@@ -30,9 +31,9 @@ class RecyclerViewExampleFragment : BaseBindingFragment<RvExampleFragmentBinding
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val rand = Random.nextInt(100)
-        val isfirst = rand%2 == 0
+        val isfirst = rand % 2 == 0
 
-        if(item.itemId == R.id.action_remove) {
+        if (item.itemId == R.id.action_remove) {
             viewModel.onRemoveClicked(isfirst)
         } else if (item.itemId == R.id.action_add) {
             viewModel.addItems(atFirst = isfirst)

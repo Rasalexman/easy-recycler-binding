@@ -1,6 +1,7 @@
 package com.rasalexman.erb.ui.viewpager2example.pages
 
 import androidx.lifecycle.*
+import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
@@ -33,7 +34,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                 val currentList = if (query.isEmpty()) {
                     list
                 } else {
-                    list.filter { it.title.contains(query) }
+                    list.filter { it.title.contains(query, true) }
                 }
                 emit(currentList)
             }
@@ -56,14 +57,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
         //isLifecyclePending = true
 
-        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
                 oldItem: IRecyclerItem,
                 newItem: IRecyclerItem
             ): Boolean {
                 return oldItem.id == newItem.id
             }
-        }*/
+        }
     }
 
     fun onClearButtonClicked() {

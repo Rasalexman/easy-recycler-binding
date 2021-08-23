@@ -25,14 +25,15 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
 
         fresh?.let { data ->
             val itemsAdapter = adapter as ItemsBinderAdapter<ItemType>
-            oldData = itemsAdapter.getAdapterItems()
-            newData = data
             lastJob = launch {
+                oldData = itemsAdapter.getAdapterItems().toList()
+                val localItems = data.toList()
                 //val startTime = System.currentTimeMillis()
                 //println("-----> start processing ")
+                newData = localItems
                 lastDiffUtil = processCalculationAsync()
                 lastDiffUtil?.let {
-                    itemsAdapter.setAdapterItems(data)
+                    itemsAdapter.setAdapterItems(localItems)
                     it.dispatchUpdatesTo(adapter)
                     //val finishTime = System.currentTimeMillis() - startTime
                     //println("-----> finish processing in ${finishTime}ms")
