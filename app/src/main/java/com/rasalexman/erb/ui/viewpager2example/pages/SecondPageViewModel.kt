@@ -6,6 +6,7 @@ import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.easyrecyclerbinding.recyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
+import com.rasalexman.erb.common.StringUtils
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
@@ -34,7 +35,11 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                 val currentList = if (query.isEmpty()) {
                     list
                 } else {
-                    list.filter { it.title.contains(query, true) }
+                    list.filter { it.title.contains(query, true) }.mapNotNull {
+                        (it as? SimpleRecyclerItemUI)?.apply {
+                            descriptionText = StringUtils.getFilterSearchColoredText(query, title, false)
+                        }
+                    }
                 }
                 emit(currentList)
             }
@@ -47,7 +52,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
     fun createRvConfig() = recyclerMultiConfig {
         itemId = BR.item
-        layoutId = R.layout.item_recycler
+        layoutId = R.layout.item_simple_recycler
 
         onItemClick = { item, _ ->
             item as IRecyclerItem
@@ -57,14 +62,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
         //isLifecyclePending = true
 
-        diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
             override fun areItemsTheSame(
                 oldItem: IRecyclerItem,
                 newItem: IRecyclerItem
             ): Boolean {
                 return oldItem.id == newItem.id
             }
-        }
+        }*/
     }
 
     fun onClearButtonClicked() {

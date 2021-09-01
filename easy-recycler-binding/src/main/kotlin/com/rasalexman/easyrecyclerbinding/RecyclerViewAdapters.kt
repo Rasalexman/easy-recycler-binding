@@ -360,8 +360,10 @@ private fun <ItemType : Any> applyData(
                     }
                 }
             }
-            if (oldSz > 0 && indFirst == -1) {
+            if (oldSz > 0 && newSz > 0 && indFirst == -1) {
                 adapter.notifyItemRangeChanged(0, newSz)
+            } else if (oldSz > 0 && (indFirst in 0 until newSz)) {
+                adapter.notifyItemRangeChanged(indFirst, newSz)
             }
         }
     } else {
@@ -371,7 +373,7 @@ private fun <ItemType : Any> applyData(
                 old.addAll(it)
             }
             val notifySize = old.size
-            if(notifySize > 0) {
+            if (notifySize > 0) {
                 adapter.notifyItemRangeChanged(0, notifySize)
             }
         }

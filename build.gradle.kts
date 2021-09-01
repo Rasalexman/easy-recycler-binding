@@ -13,13 +13,8 @@ buildscript {
         classpath(appdependencies.ClassPath.gradle)
         classpath(appdependencies.ClassPath.kotlingradle)
 
-        classpath(appdependencies.ClassPath.google)
+        //classpath(appdependencies.ClassPath.google)
         classpath(appdependencies.ClassPath.navisafe)
-        classpath(appdependencies.ClassPath.mavenplugin)
-        classpath("com.android.tools.build:gradle:4.2.2")
-        //classpath(appdependencies.ClassPath.dokkaplugin)
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
     }
 }
 
