@@ -28,6 +28,9 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
 
     val searchState = MutableLiveData(SearchState.CLOSED)
 
+    val currentQuery: String
+        get() = searchQuery.value.orEmpty()
+
     @FlowPreview
     val currentItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
         liveData(Dispatchers.Default) {
@@ -36,13 +39,20 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                     list
                 } else {
                     list.filter { it.title.contains(query, true) }.mapNotNull {
-                        (it as? SimpleRecyclerItemUI)?.apply {
+                        (it as? SimpleRecyclerItemUI)?.copy()?.apply {
                             descriptionText = StringUtils.getFilterSearchColoredText(query, title, false)
                         }
                     }
                 }
                 emit(currentList)
             }
+        }
+    }
+
+    @FlowPreview
+    override val itemsCount: LiveData<String> by lazy {
+        currentItems.map {
+            "Items count: ${it.size}"
         }
     }
 
@@ -60,16 +70,29 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
                 MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
         }
 
+        onModelBind = { model, pos ->
+            println("----> Model binded on pos = $pos with id = ${model::class.simpleName}")
+        }
+
         //isLifecyclePending = true
 
-        /*diffUtilCallback = object : DiffCallback<IRecyclerItem>() {
+        diffUtilCallback = object : DiffCallback<SimpleRecyclerItemUI>() {
             override fun areItemsTheSame(
-                oldItem: IRecyclerItem,
-                newItem: IRecyclerItem
+                oldItem: SimpleRecyclerItemUI,
+                newItem: SimpleRecyclerItemUI
             ): Boolean {
-                return oldItem.id == newItem.id
+                val idsEqual = oldItem.id == newItem.id
+                return idsEqual
             }
-        }*/
+
+            override fun areContentsTheSame(
+                oldItem: SimpleRecyclerItemUI,
+                newItem: SimpleRecyclerItemUI
+            ): Boolean {
+                val descEqual = oldItem.descriptionText == newItem.descriptionText
+                return descEqual
+            }
+        }
     }
 
     fun onClearButtonClicked() {

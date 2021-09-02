@@ -60,6 +60,10 @@ class RecyclerViewExampleFragment :
                 Toast.makeText(context, "onItemDoubleClicked", Toast.LENGTH_SHORT).show()
             }
 
+            onModelBind = { model, pos ->
+                println("-----> Multi model bind = ${model::class.simpleName} on pos = $pos")
+            }
+
             onLoadMore = {
                 //viewModel.addItems(atFirst = false)
             }

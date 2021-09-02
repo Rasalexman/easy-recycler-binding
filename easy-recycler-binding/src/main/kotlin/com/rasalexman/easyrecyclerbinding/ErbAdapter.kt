@@ -140,14 +140,17 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         val item = getAdapterItem(absolutePosition)
         if (itemId != -1 && item != null) {
             localBinding.setVariable(itemId, item)
+            onBindItem(item, position)
             onBind(localBinding as BindingType, absolutePosition)
+            localBinding.executePendingBindings()
         }
 
-        if (localBinding.lifecycleOwner == null && !isLifecyclePending) {
+        /*if (localBinding.lifecycleOwner == null && !isLifecyclePending) {
             localBinding.executePendingBindings()
         } else if(isLifecyclePending) {
             localBinding.executePendingBindings()
-        }
+        }*/
+
     }
 
     private fun getViewHolderPosition(holder: BindingViewHolder, position: Int): Int {
@@ -185,6 +188,11 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         layoutInflater = null
         parentFragmentLifecycleOwner = null
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun<T : Any> onBindItem(item: T?, position: Int) {
+        realisation?.onBindItem(item, position)
+    }
 }
 
 class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
@@ -210,6 +218,7 @@ interface IErbAdapter<ItemType : Any, BindingType : ViewDataBinding> :
 interface DataBindingAdapter<BindingType : ViewDataBinding> {
     fun onCreate(binding: BindingType)
     fun onBind(binding: BindingType, position: Int)
+    fun<T : Any> onBindItem(item: T?, position: Int)
     fun onUnbind(binding: BindingType)
 }
 

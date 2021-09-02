@@ -26,18 +26,20 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
         fresh?.let { data ->
             val itemsAdapter = adapter as ItemsBinderAdapter<ItemType>
             lastJob = launch {
-                oldData = itemsAdapter.getAdapterItems().toList()
-                val localItems = data.toList()
                 //val startTime = System.currentTimeMillis()
                 //println("-----> start processing ")
-                newData = localItems
+                val localOldItems = itemsAdapter.getAdapterItems()
+                val localNewItems = data.toList()
+                oldData = localOldItems
+                newData = localNewItems
+
                 lastDiffUtil = processCalculationAsync()
                 lastDiffUtil?.let {
-                    itemsAdapter.setAdapterItems(localItems)
+                    itemsAdapter.setAdapterItems(localNewItems)
                     it.dispatchUpdatesTo(adapter)
-                    //val finishTime = System.currentTimeMillis() - startTime
-                    //println("-----> finish processing in ${finishTime}ms")
                 }
+                //val finishTime = System.currentTimeMillis() - startTime
+                //println("-----> finish processing in ${finishTime}ms")
             }
         }
 
@@ -55,10 +57,15 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return areContentsTheSame(
-            oldData?.getOrNull(oldItemPosition),
-            newData?.getOrNull(newItemPosition)
-        )
+        val oldItem = oldData?.getOrNull(oldItemPosition)
+        val newItem = newData?.getOrNull(newItemPosition)
+        return if (oldItem != null && newItem != null) {
+            areContentsTheSame(oldItem, newItem)
+        } else if (oldItem == null && newItem == null) {
+            return true
+        } else {
+            throw AssertionError()
+        }
     }
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -71,14 +78,8 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
         }
     }
 
-    open fun areContentsTheSame(oldItem: ItemType?, newItem: ItemType?): Boolean {
-        return if (oldItem != null && newItem != null) {
-            areItemsTheSame(oldItem, newItem)
-        } else if (oldItem == null && newItem == null) {
-            return true
-        } else {
-            throw AssertionError()
-        }
+    open fun areContentsTheSame(oldItem: ItemType, newItem: ItemType): Boolean {
+        return oldItem == newItem
     }
 
     open fun areItemsTheSame(oldItem: ItemType, newItem: ItemType): Boolean {

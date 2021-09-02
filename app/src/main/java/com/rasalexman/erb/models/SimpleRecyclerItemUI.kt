@@ -7,11 +7,10 @@ import com.rasalexman.erb.R
 
 data class SimpleRecyclerItemUI(
     override val id: String,
-    override val title: String
+    override val title: String,
+    var descriptionText: SpannedString = SpannedString(title)
 ) : IRecyclerItem, IBindingModel {
     override val isChecked: ObservableBoolean = ObservableBoolean(false)
     override val layoutResId: Int
         get() = R.layout.item_simple_recycler
-
-    var descriptionText: SpannedString = SpannedString(title)
 }

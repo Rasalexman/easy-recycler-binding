@@ -42,6 +42,7 @@ class ViewPager2ExampleFragment :
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_search, menu)
+        super.onCreateOptionsMenu(menu, inflater)
 
         val mainActivity = (requireActivity() as MainActivity)
         val item = menu.findItem(R.id.action_search)
@@ -70,7 +71,12 @@ class ViewPager2ExampleFragment :
         })
         searchMenuItem = item
         searchViewItem = searchView
-        super.onCreateOptionsMenu(menu, inflater)
+
+        if(secondPageViewModel.currentQuery.isNotEmpty()) {
+            view?.postDelayed({
+                searchMenuItem?.expandActionView()
+            }, 500L)
+        }
     }
 
     override fun initBinding(binding: Vp2ExampleFragmentBinding) {
@@ -92,6 +98,8 @@ class ViewPager2ExampleFragment :
                 if(searchMenuItem?.isActionViewExpanded == true) {
                     searchMenuItem?.collapseActionView()
                 }
+            } else if (it == SearchState.OPEN) {
+                searchViewItem?.setQuery(secondPageViewModel.currentQuery, false)
             }
         }
     }

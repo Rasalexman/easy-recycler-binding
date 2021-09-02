@@ -2,6 +2,7 @@ package com.rasalexman.erb.ui.base
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.rasalexman.easyrecyclerbinding.ScrollPosition
 import com.rasalexman.erb.models.IRecyclerItem
@@ -18,6 +19,12 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
     val scrollPosition: LiveData<ScrollPosition> = MutableLiveData(ScrollPosition())
     open val items: MutableLiveData<List<IRecyclerItem>> = MutableLiveData()
     open val visibleThresholds: MutableLiveData<Int> = MutableLiveData(7)
+
+    open val itemsCount: LiveData<String> by lazy {
+        items.map {
+            "Items count: ${it.size}"
+        }
+    }
 
     init {
         createItems()

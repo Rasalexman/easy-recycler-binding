@@ -91,6 +91,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+tasks.create(name = "sourceJar", type = Jar::class) {
+    archiveName = "sources"
+}
+
 afterEvaluate {
 
     publishing {

@@ -329,6 +329,8 @@ private fun <ItemType : Any> applyData(
     oldItems: MutableList<ItemType>?,
     newItems: List<ItemType>?
 ) {
+
+    var notifySize = 0
     if (oldItems !== newItems) {
         if (oldItems == null) return
 
@@ -354,30 +356,20 @@ private fun <ItemType : Any> applyData(
                     remSz = if (remSz < 0) 0 else remSz
                     adapter.notifyItemRangeRemoved(remSz, absDiff)
                 }
-                else -> {
-                    if (newSz != oldSz) {
-                        adapter.notifyItemRangeChanged(0, newSz)
-                    }
-                }
+                else -> Unit
             }
-            if (oldSz > 0 && newSz > 0 && indFirst == -1) {
-                adapter.notifyItemRangeChanged(0, newSz)
-            } else if (oldSz > 0 && (indFirst in 0 until newSz)) {
-                adapter.notifyItemRangeChanged(indFirst, newSz)
-            }
+            notifySize = newSz
         }
     } else {
-        oldItems?.let { old ->
+        notifySize = oldItems?.let { old ->
             old.clear()
             newItems?.let {
                 old.addAll(it)
             }
-            val notifySize = old.size
-            if (notifySize > 0) {
-                adapter.notifyItemRangeChanged(0, notifySize)
-            }
-        }
+            old.size
+        } ?: 0
     }
+    adapter.notifyItemRangeChanged(0, notifySize)
 }
 
 internal class ScrollPositionObserver(
@@ -537,6 +529,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onItemBind: ((BT, Int) -> Unit)? = null
         var onLoadMore: ((Int) -> Unit)? = null
         var onItemClick: ((I, Int) -> Unit)? = null
+        var onModelBind: ((I, Int) -> Unit)? = null
         var onItemDoubleClicked: ((I, Int) -> Unit)? = null
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
         var layoutManager: RecyclerView.LayoutManager? = null
@@ -591,6 +584,15 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
 
                     override fun onUnbind(binding: BT) {
                         onItemUnbind?.invoke(binding)
+                    }
+
+                    override fun <T : Any> onBindItem(item: T?, position: Int) {
+                        onModelBind?.let { modelHandler ->
+                            val boundItem = (item as? I)
+                            boundItem?.let {
+                                modelHandler.invoke(it, position)
+                            }
+                        }
                     }
                 },
                 onItemClickListener = object : OnRecyclerItemClickListener {
@@ -695,6 +697,10 @@ internal class DataBindingRecyclerAdapter<ItemType : Any, BindingType : ViewData
 
     override fun getItemViewType(position: Int): Int {
         return erbAdapter.getItemViewType(position)
+    }
+
+    override fun getAdapterItems(): List<ItemType> {
+        return erbAdapter.getAdapterItems()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
