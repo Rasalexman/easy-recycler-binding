@@ -74,13 +74,13 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    compileOnly(kotlin("stdlib-jdk8", Versions.kotlin))
+    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
-    compileOnly(appdependencies.Libs.Core.viewPager2)
-    compileOnly(appdependencies.Libs.Core.recyclerView)
-    compileOnly(appdependencies.Libs.Core.coroutines)
-    compileOnly(appdependencies.Libs.Core.fragment_ktx)
-    compileOnly(appdependencies.Libs.Core.paging3)
+    implementation(appdependencies.Libs.Core.viewPager2)
+    implementation(appdependencies.Libs.Core.recyclerView)
+    implementation(appdependencies.Libs.Core.coroutines)
+    implementation(appdependencies.Libs.Core.fragment_ktx)
+    implementation(appdependencies.Libs.Core.paging3)
 }
 
 group = "com.rasalexman.easyrecyclerbinding"
@@ -92,7 +92,7 @@ java {
 }
 
 tasks.register<Jar>(name = "sourceJar") {
-    from(android.sourceSets["main"].java.srcDirs)
+    //from(android.sourceSets["main"].java.srcDirs)
     archiveClassifier.set("sources")
 }
 
@@ -107,7 +107,7 @@ afterEvaluate {
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding"
                 version = appdependencies.Builds.ERB.VERSION_NAME
-                artifact("$buildDir/outputs/aar/easy-recycler-binding-release.aar")
+                //artifact("$buildDir/outputs/aar/easy-recycler-binding-release.aar")
                 artifact(tasks["sourceJar"])
             }
             create<MavenPublication>("debug") {
@@ -117,7 +117,7 @@ afterEvaluate {
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding-debug"
                 version = appdependencies.Builds.ERB.VERSION_NAME
-                artifact("$buildDir/outputs/aar/easy-recycler-binding-debug.aar")
+                //artifact("$buildDir/outputs/aar/easy-recycler-binding-debug.aar")
                 artifact(tasks["sourceJar"])
             }
         }
