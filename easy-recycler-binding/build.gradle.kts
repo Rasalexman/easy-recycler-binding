@@ -92,7 +92,7 @@ java {
 }
 
 tasks.register<Jar>(name = "sourceJar") {
-    //from(android.sourceSets["main"].java.srcDirs)
+    from(android.sourceSets["main"].java.srcDirs)
     archiveClassifier.set("sources")
 }
 
