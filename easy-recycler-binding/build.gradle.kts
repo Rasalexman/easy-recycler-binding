@@ -91,8 +91,9 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.create(name = "sourceJar", type = Jar::class) {
-    archiveName = "sources"
+tasks.register<Jar>(name = "sourceJar") {
+    from(android.sourceSets["main"].java.srcDirs)
+    archiveClassifier.set("sources")
 }
 
 afterEvaluate {
@@ -106,6 +107,8 @@ afterEvaluate {
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding"
                 version = appdependencies.Builds.ERB.VERSION_NAME
+                artifact("$buildDir/outputs/aar/easy-recycler-binding-release.aar")
+                artifact(tasks["sourceJar"])
             }
             create<MavenPublication>("debug") {
                 from(components["debug"])
@@ -114,6 +117,8 @@ afterEvaluate {
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding-debug"
                 version = appdependencies.Builds.ERB.VERSION_NAME
+                artifact("$buildDir/outputs/aar/easy-recycler-binding-debug.aar")
+                artifact(tasks["sourceJar"])
             }
         }
 

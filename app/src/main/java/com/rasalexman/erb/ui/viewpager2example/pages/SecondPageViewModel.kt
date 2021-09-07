@@ -1,5 +1,6 @@
 package com.rasalexman.erb.ui.viewpager2example.pages
 
+import androidx.core.text.toSpanned
 import androidx.lifecycle.*
 import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
@@ -34,7 +35,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     @FlowPreview
     val currentItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
         liveData(Dispatchers.Default) {
-            searchQuery.asFlow().debounce(200L).distinctUntilChanged().collect { query ->
+            searchQuery.asFlow().debounce(200L).distinctUntilChanged().collect { query -> //
                 val currentList = if (query.isEmpty()) {
                     list
                 } else {
