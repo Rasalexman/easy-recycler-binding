@@ -57,7 +57,7 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
     val oldItems: MutableList<ItemType> =
         viewPager.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
-    if (viewPager.adapter == null && !newItems.isNullOrEmpty()) {
+    if (viewPager.adapter == null) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
@@ -121,9 +121,10 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     val oldItems: MutableList<ItemType> =
         recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
-    val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
+
 
     if (recyclerView.adapter == null) {
+        val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
 
         var scrollListener: EndlessRecyclerOnScrollListener? = null
