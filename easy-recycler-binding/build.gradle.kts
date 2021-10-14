@@ -9,18 +9,18 @@ plugins {
 }
 
 android {
-    compileSdkVersion(appdependencies.Builds.COMPILE_VERSION)
+    compileSdk = appdependencies.Builds.COMPILE_VERSION
     defaultConfig {
-        minSdkVersion(appdependencies.Builds.MIN_VERSION)
-        targetSdkVersion(appdependencies.Builds.TARGET_VERSION)
-        versionCode = appdependencies.Builds.ERB.VERSION_CODE
-        versionName = appdependencies.Builds.ERB.VERSION_NAME
+        minSdk = appdependencies.Builds.MIN_VERSION
+        targetSdk = appdependencies.Builds.TARGET_VERSION
+        //version = appdependencies.Builds.ERB.VERSION_NAME
+        //versionCode = appdependencies.Builds.ERB.VERSION_CODE
+        //versionName = appdependencies.Builds.ERB.VERSION_NAME
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
-            isDebuggable = true
         }
 
         getByName("release") {
@@ -39,8 +39,8 @@ android {
     }
 
     packagingOptions {
-        exclude("META-INF/notice.txt")
-        exclude("DebugProbesKt.bin")
+        resources.excludes.add("META-INF/notice.txt")
+        resources.excludes.add("DebugProbesKt.bin")
     }
 
     // Declare the task that will monitor all configurations.

@@ -121,8 +121,6 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     val oldItems: MutableList<ItemType> =
         recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
-
-
     if (recyclerView.adapter == null) {
         val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
@@ -271,8 +269,8 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
 
         if (oldItems == null) {
             oldItems = mutableListOf()
-            this.tag = oldItems
         }
+        this.tag = oldItems
     }
     return oldItems ?: mutableListOf()
 }

@@ -5,6 +5,6 @@ rootProject.name = "EasyRecyclerBinding"
 buildCache {
     local {
         directory = File(rootDir, "build-cache")
-        removeUnusedEntriesAfterDays = 30
+        removeUnusedEntriesAfterDays = 2
     }
 }

@@ -17,14 +17,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion(COMPILE_VERSION)
-    buildToolsVersion = BUILD_TOOLS
+    compileSdk = COMPILE_VERSION
     defaultConfig {
         applicationId = APP_ID
-        minSdkVersion(MIN_VERSION)
-        targetSdkVersion(TARGET_VERSION)
-        versionCode = appdependencies.Builds.App.VERSION_CODE
-        versionName = appdependencies.Builds.App.VERSION_NAME
+        minSdk = MIN_VERSION
+        targetSdk = TARGET_VERSION
+        //versionCode = appdependencies.Builds.App.VERSION_CODE
+        version = appdependencies.Builds.App.VERSION_NAME
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -81,7 +80,7 @@ android {
     }
 
     packagingOptions {
-        exclude("META-INF/notice.txt")
+        resources.excludes.add("META-INF/notice.txt")
     }
 
     // Declare the task that will monitor all configurations.
