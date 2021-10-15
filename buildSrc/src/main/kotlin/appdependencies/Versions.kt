@@ -2,7 +2,7 @@ package appdependencies
 
 object Versions {
 
-    const val gradle = "4.2.2"//"7.0.3"
+    const val gradle = "7.0.3"//"4.2.2"//
     const val kotlin = "1.5.31"
 
     const val appCoreX = "1.7.0-rc01"
