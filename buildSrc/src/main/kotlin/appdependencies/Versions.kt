@@ -12,7 +12,7 @@ object Versions {
     const val viewPager2 = "1.1.0-beta01"
     const val recyclerView = "1.3.0-alpha01"
     const val coroutinesAndroid = "1.5.2"
-    const val lifecycle = "2.3.1"
+    const val lifecycle = "2.4.0-rc01"
     const val fragment: String = "1.4.0-alpha10"
     const val paging3: String = "3.1.0-beta01"
 

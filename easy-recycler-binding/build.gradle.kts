@@ -65,7 +65,7 @@ android {
     kotlinOptions {
         languageVersion = "1.5"
         apiVersion = "1.5"
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 
     buildFeatures {
@@ -75,7 +75,6 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
     implementation(appdependencies.Libs.Core.viewPager2)
     implementation(appdependencies.Libs.Core.recyclerView)
