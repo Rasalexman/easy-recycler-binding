@@ -464,7 +464,8 @@ internal class ItemsDataObserver(
     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
         if (positionStart == 0) {
             resetScrollListenerTotalCount()
-            changeScrollPosition(itemCount)
+            // will be removed in future releases
+            //changeScrollPosition(itemCount)
         }
     }
 
