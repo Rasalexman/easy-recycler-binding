@@ -1,5 +1,4 @@
 import appdependencies.Builds.APP_ID
-import appdependencies.Builds.BUILD_TOOLS
 import appdependencies.Builds.COMPILE_VERSION
 import appdependencies.Builds.MIN_VERSION
 import appdependencies.Builds.TARGET_VERSION

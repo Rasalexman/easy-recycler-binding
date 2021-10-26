@@ -3,6 +3,7 @@
 
     <string name="title_menu">Menu</string>
     <string name="button_title_recycler">RecyclerView</string>
+    <string name="button_title_horizontal_recycler">Horizontal RV</string>
     <string name="button_title_vp">ViewPager</string>
     <string name="button_title_vp2">ViewPager2</string>
     <string name="button_title_paging">Paging</string>

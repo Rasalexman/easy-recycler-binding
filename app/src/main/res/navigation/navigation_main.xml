@@ -24,6 +24,10 @@
             android:id="@+id/showPagingFragment"
             app:destination="@id/pagingFragment"/>
 
+        <action
+            android:id="@+id/showHorizontalFragment"
+            app:destination="@id/rvHorizontalFragment"/>
+
     </fragment>
 
     <fragment
@@ -40,6 +44,11 @@
         android:id="@+id/vp2Fragment"
         android:name="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleFragment"
         android:label="ViewPager2ExampleFragment" />
+
+    <fragment
+        android:id="@+id/rvHorizontalFragment"
+        android:name="com.rasalexman.erb.ui.horizontalrecycler.RecyclerHorizontalViewExampleFragment"
+        android:label="RecyclerHorizontalViewExampleFragment" />
 
     <fragment
         android:id="@+id/pagingFragment"

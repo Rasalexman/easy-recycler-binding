@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="item"
+            type="com.rasalexman.erb.ui.horizontalrecycler.TopItemUI" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="56dp"
+        android:layout_height="72dp"
+        app:cardCornerRadius="8dp"
+        android:background="@color/gray"
+        android:layout_margin="8dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorTabBackground">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:text="@{item.title}"
+                tools:text="Hello world"
+                android:gravity="center"
+                android:layout_height="wrap_content" />
+        </FrameLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+</layout>

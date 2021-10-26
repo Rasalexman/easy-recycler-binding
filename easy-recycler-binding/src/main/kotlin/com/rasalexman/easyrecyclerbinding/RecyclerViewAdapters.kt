@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.databinding.BindingAdapter
 import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.InverseBindingListener
@@ -398,6 +399,11 @@ internal class ScrollPositionObserver(
         saveScrollPosition()
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    fun onLifecycleOwnerResumed() {
+        adapterDataObserver?.changeScrollPosition(1)
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onLifecycleOwnerDestroyed() {
         clearWhenViewDestroy()
@@ -407,15 +413,23 @@ internal class ScrollPositionObserver(
         scrollPositionWeakRef.get()?.let { scrollPosition ->
             recyclerWeakRef.get()?.let { currentRV ->
                 currentRV.stopScroll()
+                val linearLayoutManager = (currentRV.layoutManager as? LinearLayoutManager?)
+                val isHorizontal = linearLayoutManager?.orientation == LinearLayout.HORIZONTAL
+
+                val position = if(isHorizontal) {
+                    currentRV.getChildAt(0)?.let { it.left - currentRV.paddingStart } ?: 0
+                } else {
+                    currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
+                }
+
                 scrollPosition.apply {
-                    index =
-                        (currentRV.layoutManager as? LinearLayoutManager?)?.findFirstVisibleItemPosition()
-                            ?: 0
-                    top = currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
+                    index = linearLayoutManager?.findFirstVisibleItemPosition() ?: 0
+                    top = position
                 }
             }
         }
     }
+
 
     private fun clearWhenViewDestroy() {
         scrollPositionWeakRef.clear()
@@ -460,19 +474,19 @@ internal class ItemsDataObserver(
         scrollListenerWeakRef.clear()
     }
 
-    private fun changeScrollPosition(itemCount: Int) {
+    fun changeScrollPosition(itemCount: Int) {
         if (itemCount > 0) {
             scrollPositionWeakRef.get()?.let { scrollPos ->
                 if (scrollPos.isNotEmpty()) {
                     recyclerWeakRef.get()?.let { recyclerView ->
                         recyclerView.stopScroll()
-                        (recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(
+                        val linearLayoutManager = (recyclerView.layoutManager as? LinearLayoutManager?)
+                        linearLayoutManager?.scrollToPositionWithOffset(
                             scrollPos.index,
                             scrollPos.top
                         )
                     }
                 }
-
             }
         }
     }

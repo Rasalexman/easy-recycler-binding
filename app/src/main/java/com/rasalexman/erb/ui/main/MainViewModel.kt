@@ -19,4 +19,8 @@ class MainViewModel : BaseViewModel() {
     fun onPagingButtonClicked() {
         navigationState.value = MainFragmentDirections.showPagingFragment()
     }
+
+    fun onHorizontalButtonClicked() {
+        navigationState.value = MainFragmentDirections.showHorizontalFragment()
+    }
 }
