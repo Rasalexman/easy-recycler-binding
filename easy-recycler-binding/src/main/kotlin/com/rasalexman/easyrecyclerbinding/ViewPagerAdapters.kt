@@ -44,7 +44,6 @@ fun setupViewPager(
                 }
             }
         }
-        viewPager.clearOnPageChangeListeners()
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) = Unit
             override fun onPageScrolled(
