@@ -32,11 +32,23 @@ import java.util.*
 import kotlin.math.abs
 
 class CustomPageChangeCallback : ViewPager2.OnPageChangeCallback() {
-    var onPageChangedCallback: (() -> Unit)? = null
+    var onPageSelectedCallback: ((Int) -> Unit)? = null
+    var onPageScrollStateCallback: ((Int) -> Unit)? = null
+    var onPageScrolledCallback: ((Int) -> Unit)? = null
 
     override fun onPageSelected(position: Int) {
-        onPageChangedCallback?.invoke()
+        onPageSelectedCallback?.invoke(position)
         super.onPageSelected(position)
+    }
+
+    override fun onPageScrollStateChanged(state: Int) {
+        onPageScrollStateCallback?.invoke(state)
+        super.onPageScrollStateChanged(state)
+    }
+
+    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+        onPageScrolledCallback?.invoke(position)
+        super.onPageScrolled(position, positionOffset, positionOffsetPixels)
     }
 }
 
@@ -66,7 +78,11 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
 
         val callbackKey = viewPager.hashCode().toString()
         val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
-            CustomPageChangeCallback()
+            CustomPageChangeCallback().apply {
+                onPageScrolledCallback = dataBindingRecyclerViewConfig.onScrollListener
+                onPageScrollStateCallback = dataBindingRecyclerViewConfig.onPageScrollStateListener
+                onPageSelectedCallback = dataBindingRecyclerViewConfig.onPageSelectedListener
+            }
         }
         viewPager.registerOnPageChangeCallback(lastCallback)
     }
@@ -92,7 +108,7 @@ fun setSelectedPosition(
 
     val callbackKey = viewPager.hashCode().toString()
     val pageChangeCallback = changeCallbackMap[callbackKey]
-    pageChangeCallback?.onPageChangedCallback = {
+    pageChangeCallback?.onPageSelectedCallback = {
         changeListener?.onChange()
     }
 }
@@ -517,6 +533,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
     val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null,
     val onScrollListener: ((Int) -> Unit)? = null,
+    val onPageSelectedListener: ((Int) -> Unit)? = null,
+    val onPageScrollStateListener: ((Int) -> Unit)? = null,
     val layoutManager: RecyclerView.LayoutManager? = null,
     val isReverseLayout: Boolean = false,
     val recyclerOnScrollListener: RecyclerView.OnScrollListener? = null,
@@ -548,6 +566,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
         var layoutManager: RecyclerView.LayoutManager? = null
         var onScrollListener: RecyclerView.OnScrollListener? = null
+        var onPageSelectedListener: ((Int) -> Unit)? = null
+        var onPageScrollStateListener: ((Int) -> Unit)? = null
         var itemAnimator: RecyclerView.ItemAnimator? = null
         var itemDecorator: List<RecyclerView.ItemDecoration>? = null
         var diffUtilCallback: DiffCallback<*>? = null
@@ -574,6 +594,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 consumeLongClick = consumeLongClick,
                 layoutManager = layoutManager,
                 onScrollListener = onLoadMore,
+                onPageSelectedListener = onPageSelectedListener,
+                onPageScrollStateListener = onPageScrollStateListener,
                 recyclerOnScrollListener = onScrollListener,
                 itemAnimator = itemAnimator,
                 itemDecorator = itemDecorator,

@@ -118,7 +118,7 @@ class ViewPager2ExampleFragment :
 
         val callbackKey = binding?.viewpager2.hashCode().toString()
         changeCallbackMap[callbackKey]?.let {
-            it.onPageChangedCallback = null
+            it.onPageSelectedCallback = null
             binding?.viewpager2?.unregisterOnPageChangeCallback(it)
             changeCallbackMap.remove(callbackKey)
         }

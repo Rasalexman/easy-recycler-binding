@@ -43,20 +43,21 @@ fun setupViewPager(
                     setCurrentItem(it, false)
                 }
             }
-        }
-        viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) = Unit
-            override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
-            ) = Unit
 
-            override fun onPageSelected(position: Int) {
-                changeListener?.onChange()
-                pageSelectionListener?.onPageSelected(position)
-            }
-        })
+            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                override fun onPageScrollStateChanged(state: Int) = Unit
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) = Unit
+
+                override fun onPageSelected(position: Int) {
+                    changeListener?.onChange()
+                    pageSelectionListener?.onPageSelected(position)
+                }
+            })
+        }
 
     } else {
         tabPosition?.let {
@@ -214,8 +215,8 @@ internal open class ViewPagerAdapter(
 
     override fun getCount(): Int = viewPagerSettings.countTab()
 
-    override fun isViewFromObject(view: View, `object`: Any): Boolean {
-        return view === `object`
+    override fun isViewFromObject(view: View, other: Any): Boolean {
+        return view === other
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
