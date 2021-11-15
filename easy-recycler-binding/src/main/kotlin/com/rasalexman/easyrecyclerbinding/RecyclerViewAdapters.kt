@@ -139,7 +139,8 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
     if (recyclerView.adapter == null) {
-        val isStandardAdapter = dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
+        val isStandardAdapter =
+            dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
         recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
 
         var scrollListener: EndlessRecyclerOnScrollListener? = null
@@ -435,7 +436,7 @@ internal class ScrollPositionObserver(
                 val linearLayoutManager = (currentRV.layoutManager as? LinearLayoutManager?)
                 val isHorizontal = linearLayoutManager?.orientation == LinearLayout.HORIZONTAL
 
-                val position = if(isHorizontal) {
+                val position = if (isHorizontal) {
                     currentRV.getChildAt(0)?.let { it.left - currentRV.paddingStart } ?: 0
                 } else {
                     currentRV.getChildAt(0)?.let { it.top - currentRV.paddingTop } ?: 0
@@ -500,7 +501,8 @@ internal class ItemsDataObserver(
                 if (scrollPos.isNotEmpty()) {
                     recyclerWeakRef.get()?.let { recyclerView ->
                         recyclerView.stopScroll()
-                        val linearLayoutManager = (recyclerView.layoutManager as? LinearLayoutManager?)
+                        val linearLayoutManager =
+                            (recyclerView.layoutManager as? LinearLayoutManager?)
                         linearLayoutManager?.scrollToPositionWithOffset(
                             scrollPos.index,
                             scrollPos.top
