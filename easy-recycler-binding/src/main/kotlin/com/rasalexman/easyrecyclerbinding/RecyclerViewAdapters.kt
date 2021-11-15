@@ -74,7 +74,13 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
-        viewPager.adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
+        // create adapter for vp
+        val adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
+        // set current adapter
+        viewPager.adapter = adapter
+        // invoke onAdapterAdded callback
+        dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
+
 
         val callbackKey = viewPager.hashCode().toString()
         val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
