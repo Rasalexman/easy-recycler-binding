@@ -67,6 +67,10 @@ class RecyclerViewExampleFragment :
             onLoadMore = {
                 //viewModel.addItems(atFirst = false)
             }
+
+            onAdapterAdded = {
+                println("-----> onAdapterAdded ${it::class.simpleName}")
+            }
         }
     }
 }

@@ -180,8 +180,12 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.defaultFocusHighlightEnabled = false
         }
 
+        val adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
         // create adapter
-        recyclerView.swapAdapter(dataBindingRecyclerViewConfig.createAdapter(oldItems), false)
+        recyclerView.swapAdapter(adapter, false).also {
+            // invoke onAdapterAdded callback
+            dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
+        }
 
         // create scroll position observer and scroll listener recalculation
         val lifecycleOwner = try {
@@ -545,7 +549,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val hasFixedSize: Boolean = true,
     val isLifecyclePending: Boolean = true,
     val stateFooterAdapter: DataBindingLoadStateAdapter<ILoadStateModel, ViewDataBinding>? = null,
-    val stateHeaderAdapter: DataBindingLoadStateAdapter<ILoadStateModel, ViewDataBinding>? = null
+    val stateHeaderAdapter: DataBindingLoadStateAdapter<ILoadStateModel, ViewDataBinding>? = null,
+    val onAdapterAdded: ((RecyclerView.Adapter<*>) -> Unit)? = null,
 ) {
 
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
@@ -575,6 +580,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var hasFixedSize: Boolean = true
         var isLifecyclePending: Boolean = true
         var isReverseLayout: Boolean = false
+        var onAdapterAdded: ((RecyclerView.Adapter<*>) -> Unit)? = null
 
         var stateFooterAdapter: DataBindingLoadStateAdapter<ILoadStateModel, ViewDataBinding>? =
             null
@@ -654,7 +660,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                             onItemLongClickListener?.invoke(it, position)
                         }
                     }
-                }
+                },
+                onAdapterAdded = onAdapterAdded
             )
         }
     }
