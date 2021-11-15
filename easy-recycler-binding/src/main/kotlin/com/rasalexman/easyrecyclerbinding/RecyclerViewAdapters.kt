@@ -182,10 +182,9 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
 
         val adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
         // create adapter
-        recyclerView.swapAdapter(adapter, false).also {
-            // invoke onAdapterAdded callback
-            dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
-        }
+        recyclerView.swapAdapter(adapter, false)
+        // invoke onAdapterAdded callback
+        dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
 
         // create scroll position observer and scroll listener recalculation
         val lifecycleOwner = try {
