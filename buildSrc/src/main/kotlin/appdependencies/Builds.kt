@@ -7,13 +7,13 @@ object Builds {
     const val APP_ID = "com.rasalexman.easyrecyclerbinding"
 
     object App {
-        const val VERSION_CODE = 10001
-        const val VERSION_NAME = "10001"
+        const val VERSION_CODE = 10002
+        const val VERSION_NAME = "10002"
     }
 
     object ERB {
-        const val VERSION_CODE = 10109
-        const val VERSION_NAME = "1.1.9"
+        const val VERSION_CODE = 10200
+        const val VERSION_NAME = "1.2.0"
     }
 }
 

@@ -1,4 +1,3 @@
-import appdependencies.Versions
 import resources.Resources.codeDirs
 
 plugins {
@@ -63,8 +62,8 @@ android {
     }
 
     kotlinOptions {
-        languageVersion = "1.5"
-        apiVersion = "1.5"
+        languageVersion = "1.6"
+        apiVersion = "1.6"
         jvmTarget = "11"
     }
 
@@ -87,8 +86,8 @@ group = "com.rasalexman.easyrecyclerbinding"
 version = appdependencies.Builds.ERB.VERSION_NAME
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.register<Jar>(name = "sourceJar") {

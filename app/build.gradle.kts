@@ -71,9 +71,9 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
-        languageVersion = "1.5"
-        apiVersion = "1.5"
+        jvmTarget = "11"
+        languageVersion = "1.6"
+        apiVersion = "1.6"
     }
 
     tasks.withType<KotlinCompile>().all {
@@ -109,7 +109,7 @@ kapt {
 dependencies {
 
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+    //implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
     implementation(Libs.Core.coreKtx)
     implementation(Libs.Core.fragment_ktx)

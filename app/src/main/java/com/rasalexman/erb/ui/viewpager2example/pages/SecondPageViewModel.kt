@@ -50,7 +50,6 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         }
     }
 
-    @FlowPreview
     override val itemsCount: LiveData<String> by lazy {
         currentItems.map {
             "Items count: ${it.size}"
