@@ -85,14 +85,23 @@ dependencies {
 group = "com.rasalexman.easyrecyclerbinding"
 version = appdependencies.Builds.ERB.VERSION_NAME
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
 tasks.register<Jar>(name = "sourceJar") {
     from(android.sourceSets["main"].java.srcDirs)
     archiveClassifier.set("sources")
+}
+
+java {
+    sourceSets {
+        create("main") {
+            java.setSrcDirs(codeDirs)
+        }
+    }
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
+    withSourcesJar()
+    //withJavadocJar()
 }
 
 afterEvaluate {
