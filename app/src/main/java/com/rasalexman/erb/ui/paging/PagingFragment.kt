@@ -1,11 +1,13 @@
 package com.rasalexman.erb.ui.paging
 
 import androidx.fragment.app.viewModels
-import com.rasalexman.easyrecyclerbinding.createStateAdapter
 import com.rasalexman.easyrecyclerbinding.createPagingRecyclerMultiConfig
+import com.rasalexman.easyrecyclerbinding.createStateLoadingAdapter
+import com.rasalexman.easyrecyclerbinding.findPagingMultiAdapter
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
 import com.rasalexman.erb.databinding.RvPagingFragmentBinding
+import com.rasalexman.erb.models.LoadingHeaderItem
 import com.rasalexman.erb.models.LoadingItem
 import com.rasalexman.erb.ui.base.BaseBindingFragment
 
@@ -24,12 +26,17 @@ class PagingFragment : BaseBindingFragment<RvPagingFragmentBinding, PagingViewMo
                 viewModel.onShowSelectedItemFragment(item)
             }
 
-            stateFooterAdapter = createStateAdapter(LoadingItem()) {
+            stateFooterAdapter = createStateLoadingAdapter(LoadingItem()) {
                 itemId = BR.item
             }
-            /*stateHeaderAdapter = createStateAdapter(LoadingItem()) {
+            stateHeaderAdapter = createStateLoadingAdapter(LoadingHeaderItem()) {
                 itemId = BR.item
-            }*/
+            }
+        }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            binding.recyclerView.findPagingMultiAdapter()?.refresh()
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 }

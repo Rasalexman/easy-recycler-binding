@@ -3,7 +3,6 @@ import appdependencies.Builds.COMPILE_VERSION
 import appdependencies.Builds.MIN_VERSION
 import appdependencies.Builds.TARGET_VERSION
 import appdependencies.Libs
-import appdependencies.Versions
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import resources.Resources.App.dirs
@@ -24,6 +23,7 @@ android {
         //versionCode = appdependencies.Builds.App.VERSION_CODE
         version = appdependencies.Builds.App.VERSION_NAME
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
     }
     buildTypes {
         getByName("debug") {
@@ -122,7 +122,7 @@ dependencies {
     implementation(Libs.Core.livedataKtx)
     implementation(Libs.Core.viewmodelKtx)
     implementation(Libs.Core.paging3)
-    //implementation("com.rasalexman.easyrecyclerbinding:easyrecyclerbinding:0.0.4")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
 
     implementation(project(":easy-recycler-binding"))
 

@@ -16,9 +16,7 @@ import kotlin.random.Random
 
 abstract class BaseItemsViewModel : BasePagesViewModel() {
 
-    val scrollPosition: LiveData<ScrollPosition> = MutableLiveData(ScrollPosition())
     open val items: MutableLiveData<List<IRecyclerItem>> = MutableLiveData()
-    open val visibleThresholds: MutableLiveData<Int> = MutableLiveData(7)
 
     open val itemsCount: LiveData<String> by lazy {
         items.map {

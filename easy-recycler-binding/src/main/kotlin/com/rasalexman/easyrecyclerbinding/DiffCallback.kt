@@ -1,8 +1,8 @@
 package com.rasalexman.easyrecyclerbinding
 
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.rasalexman.easyrecyclerbinding.adapters.ItemsBinderAdapter
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -16,8 +16,6 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
 
     private val supervisorJob = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + supervisorJob
-
-    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
 
     @Suppress("UNCHECKED_CAST")
     override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) {

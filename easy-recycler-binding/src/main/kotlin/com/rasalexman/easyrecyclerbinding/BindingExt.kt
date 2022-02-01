@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import com.rasalexman.easyrecyclerbinding.common.BindingAdapterType
 
 /**
  * Create simple binding for given [VB] Generic class
@@ -93,10 +94,9 @@ fun Fragment.createPagingRecyclerMultiConfig(
 private fun <I : Any, BT : ViewDataBinding> Fragment.getFragmentRecyclerConfigBuilder(
     block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit
 ): DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT> {
-    return getRecyclerConfigBuilder(block)
-        .also {
-            it.lifecycleOwner = viewLifecycleOwner
-        }
+    return getRecyclerConfigBuilder(block).apply {
+        lifecycleOwner = viewLifecycleOwner
+    }
 }
 
 fun <I : Any, BT : ViewDataBinding> getRecyclerConfigBuilder(

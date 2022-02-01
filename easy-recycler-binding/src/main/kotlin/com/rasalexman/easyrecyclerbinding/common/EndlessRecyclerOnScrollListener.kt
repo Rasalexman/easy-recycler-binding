@@ -1,5 +1,5 @@
 @file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate", "SameParameterValue")
-package com.rasalexman.easyrecyclerbinding
+package com.rasalexman.easyrecyclerbinding.common
 
 import android.view.View
 import androidx.recyclerview.widget.OrientationHelper
@@ -43,17 +43,33 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
     }
 
     private fun findFirstVisibleItemPosition(recyclerView: RecyclerView): Int {
-        val child = findOneVisibleChild(0, layoutManager.childCount, false, true)
-        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(
-            child
+        return findVisibleChildIndexFrom(
+            recyclerView = recyclerView,
+            fromIndex = 0,
+            toIndex = layoutManager.childCount
         )
     }
 
     private fun findLastVisibleItemPosition(recyclerView: RecyclerView): Int {
-        val child = findOneVisibleChild(recyclerView.childCount - 1, -1, false, true)
-        return if (child == null) RecyclerView.NO_POSITION else recyclerView.getChildAdapterPosition(
-            child
+        return findVisibleChildIndexFrom(
+            recyclerView = recyclerView,
+            fromIndex = recyclerView.childCount - 1,
+            toIndex = -1
         )
+    }
+
+    private fun findVisibleChildIndexFrom(recyclerView: RecyclerView, fromIndex: Int, toIndex: Int): Int {
+        val child = findOneVisibleChild(
+            fromIndex = fromIndex,
+            toIndex = toIndex,
+            completelyVisible = false,
+            acceptPartiallyVisible = true
+        )
+        return if (child == null) {
+            RecyclerView.NO_POSITION
+        } else {
+            recyclerView.getChildAdapterPosition(child)
+        }
     }
 
     private fun findOneVisibleChild(

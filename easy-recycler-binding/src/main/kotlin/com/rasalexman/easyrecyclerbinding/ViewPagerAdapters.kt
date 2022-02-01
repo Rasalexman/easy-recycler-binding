@@ -8,8 +8,9 @@ import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.InverseBindingListener
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.rasalexman.easyrecyclerbinding.adapters.DynamicViewPagerAdapter
+import com.rasalexman.easyrecyclerbinding.adapters.ViewPagerAdapter
 
 
 @BindingAdapter(
@@ -207,41 +208,6 @@ fun dynamicViewPagerConfig(
 interface DynamicViewPagerSettings : ViewPagerSettings {
     fun getLifecycleOwner(): LifecycleOwner
     fun getDynamicData(): LiveData<*>
-}
-
-internal open class ViewPagerAdapter(
-    private val viewPagerSettings: ViewPagerSettings
-    ) : PagerAdapter() {
-
-    override fun getCount(): Int = viewPagerSettings.countTab()
-
-    override fun isViewFromObject(view: View, other: Any): Boolean {
-        return view === other
-    }
-
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val view = viewPagerSettings.getPagerItemView(container, position)
-        container.addView(view)
-        return view
-    }
-
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View)
-    }
-
-    override fun getPageTitle(position: Int): CharSequence {
-        return viewPagerSettings.getTextTitle(position)
-    }
-}
-
-internal class DynamicViewPagerAdapter(
-    viewPagerSettings: DynamicViewPagerSettings
-) : ViewPagerAdapter(viewPagerSettings) {
-    init {
-        viewPagerSettings.getDynamicData().observe(viewPagerSettings.getLifecycleOwner(), {
-            notifyDataSetChanged()
-        })
-    }
 }
 
 interface PageSelectionListener {

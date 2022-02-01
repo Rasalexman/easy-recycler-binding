@@ -5,25 +5,23 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.insertFooterItem
 import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.erb.domain.GetFlowPagerDataUseCase
-import com.rasalexman.erb.domain.GetPagerDataUseCase
 import com.rasalexman.erb.domain.IGetFlowPagerDataUseCase
-import com.rasalexman.erb.domain.IGetPagerDataUseCase
 import com.rasalexman.erb.models.IRecyclerItem
-import com.rasalexman.erb.models.LoadingItem
-import com.rasalexman.erb.ui.base.BaseItemsViewModel
+import com.rasalexman.erb.ui.base.BasePagesViewModel
 import com.rasalexman.erb.ui.main.MainFragmentDirections
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
-class PagingViewModel : BaseItemsViewModel() {
+class PagingViewModel : BasePagesViewModel() {
 
     private val getFlowPagerDataUseCase: IGetFlowPagerDataUseCase = GetFlowPagerDataUseCase()
-    private val getPagerDataUseCase: IGetPagerDataUseCase = GetPagerDataUseCase()
+    //private val getPagerDataUseCase: IGetPagerDataUseCase = GetPagerDataUseCase()
 
-    val pagingItems2 = flow {
+    private val pagingItems2 = flow {
         val pageFlow = getFlowPagerDataUseCase().cachedIn(viewModelScope)
         emitAll(pageFlow)
     }.flowOn(Dispatchers.Default)

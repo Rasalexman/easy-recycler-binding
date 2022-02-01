@@ -1,4 +1,4 @@
-package com.rasalexman.easyrecyclerbinding
+package com.rasalexman.easyrecyclerbinding.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
+import com.rasalexman.easyrecyclerbinding.*
+import com.rasalexman.easyrecyclerbinding.common.ViewClickersListener
 import java.lang.ref.WeakReference
 
 class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
@@ -140,17 +142,12 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         val item = getAdapterItem(absolutePosition)
         if (itemId != -1 && item != null) {
             localBinding.setVariable(itemId, item)
-            onBindItem(item, position)
+            onBindItem(item, absolutePosition)
             onBind(localBinding as BindingType, absolutePosition)
-            localBinding.executePendingBindings()
+            if(isLifecyclePending) {
+                localBinding.executePendingBindings()
+            }
         }
-
-        /*if (localBinding.lifecycleOwner == null && !isLifecyclePending) {
-            localBinding.executePendingBindings()
-        } else if(isLifecyclePending) {
-            localBinding.executePendingBindings()
-        }*/
-
     }
 
     private fun getViewHolderPosition(holder: BindingViewHolder, position: Int): Int {

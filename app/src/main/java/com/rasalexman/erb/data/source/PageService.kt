@@ -8,8 +8,16 @@ import java.util.*
 import kotlin.random.Random
 
 class PageService : IPageService {
+    private val allData = mutableMapOf<Int, List<PageModel>>()
+
     override suspend fun loadItems(position: Int, loadSize: Int): List<PageModel> = withContext(Dispatchers.Default) {
-        delay(2000L)
+        allData.getOrPut(position) {
+            delay(2000L)
+            createItems(position, loadSize)
+        }
+    }
+
+    private fun createItems(position: Int, loadSize: Int): List<PageModel> {
         val itemsList = mutableListOf<PageModel>()
         val randomSize = Random.nextInt(1, loadSize)
         repeat(randomSize) {
@@ -22,8 +30,8 @@ class PageService : IPageService {
                 )
             )
         }
-        println("------> itemsList position = $position | size = ${itemsList.size}")
-        itemsList
+        println("------> Finish Loading at position = $position | size = ${itemsList.size}")
+        return itemsList
     }
 }
 

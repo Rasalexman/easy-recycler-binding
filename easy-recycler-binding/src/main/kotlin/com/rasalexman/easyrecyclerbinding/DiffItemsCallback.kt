@@ -1,11 +1,10 @@
 package com.rasalexman.easyrecyclerbinding
 
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.coroutineScope
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
+import com.rasalexman.easyrecyclerbinding.adapters.BindingViewHolder
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
@@ -14,35 +13,31 @@ open class DiffItemsCallback<ItemType : Any>(
     lifecycleOwner: LifecycleOwner?
 ) : DiffUtil.ItemCallback<ItemType>(), ISetData<ItemType>, CoroutineScope {
 
-    private var lastJob: Job? = null
     private val supervisorJob = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + supervisorJob
 
-    private val lifecycleOwnerWeak:WeakReference<LifecycleOwner> = WeakReference(lifecycleOwner)
-
-    override fun setData(fresh: List<ItemType>?, adapter: RecyclerView.Adapter<*>) = Unit
+    private val lifecycleOwnerWeak: WeakReference<LifecycleOwner> = WeakReference(lifecycleOwner)
 
     @Suppress("UNCHECKED_CAST")
-    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: RecyclerView.Adapter<*>) {
+    override fun setPageData(pagerData: PagingData<ItemType>?, adapter: PagingDataAdapter<ItemType, BindingViewHolder>) {
         clearLastJob()
         pagerData?.let { freshPagingData ->
-            (adapter as? PagingDataAdapter<ItemType, BindingViewHolder>)?.let { pagingDataAdapter ->
-                lifecycleOwnerWeak.get()?.run {
-                    pagingDataAdapter.submitData(lifecycle, freshPagingData)
-                } ?: launchSubmit(freshPagingData, pagingDataAdapter)
-            }
+            lifecycleOwnerWeak.get()?.apply {
+                adapter.submitData(lifecycle, freshPagingData)
+            } ?: launchSubmit(freshPagingData, adapter)
         }
     }
 
-    private fun launchSubmit(freshPagingData: PagingData<ItemType>, adapter: PagingDataAdapter<ItemType, BindingViewHolder>) {
-        lastJob = launch(coroutineContext) {
+    private fun launchSubmit(
+        freshPagingData: PagingData<ItemType>,
+        adapter: PagingDataAdapter<ItemType, BindingViewHolder>
+    ) {
+        launch {
             adapter.submitData(freshPagingData)
         }
     }
 
     override fun clearLastJob() {
-        lastJob?.cancel()
-        lastJob = null
         supervisorJob.cancelChildren()
     }
 
