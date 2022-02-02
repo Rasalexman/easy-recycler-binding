@@ -1,7 +1,7 @@
 # easy-recycler-binding
 ERB is an library with some useful Kotlin Android data bindings adapters for RecyclerView, ViewPager and ViewPager2 with multiply ViewHolders view
 
-[ ![Kotlin 1.5.0](https://img.shields.io/badge/Kotlin-1.5.0-blue.svg)](http://kotlinlang.org) [![](https://jitpack.io/v/Rasalexman/easy-recycler-binding.svg)](https://jitpack.io/#Rasalexman/easy-recycler-binding)
+[ ![Kotlin 1.6.10](https://img.shields.io/badge/Kotlin-1.6.10-blue.svg)](http://kotlinlang.org) [![](https://jitpack.io/v/Rasalexman/easy-recycler-binding.svg)](https://jitpack.io/#Rasalexman/easy-recycler-binding)
 
 How to use with RecyclerView:
 1) Add to you layout xml file your variable for viewModel and `DataBindingRecyclerViewConfig`
