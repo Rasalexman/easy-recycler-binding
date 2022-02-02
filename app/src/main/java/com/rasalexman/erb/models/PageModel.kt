@@ -4,7 +4,7 @@ data class PageModel(
     val id: String?,
     val title: String?
 ) {
-    fun convert(): IRecyclerItem {
+    fun convert(): RecyclerItemUI {
         return RecyclerItemUI(
             id = id.orEmpty(),
             title = title.orEmpty()

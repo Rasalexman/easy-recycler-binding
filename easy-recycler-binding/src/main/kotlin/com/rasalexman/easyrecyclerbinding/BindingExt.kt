@@ -83,7 +83,7 @@ fun Fragment.createRecyclerMultiConfig(
 }
 
 fun Fragment.createPagingRecyclerMultiConfig(
-    block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<IBindingModel, ViewDataBinding>.() -> Unit
+    block: ItemsConfig<IBindingModel>.() -> Unit
 ): DataBindingRecyclerViewConfig<ViewDataBinding> {
     return getFragmentRecyclerConfigBuilder(block).run {
         adapterType = BindingAdapterType.PAGING
@@ -92,17 +92,11 @@ fun Fragment.createPagingRecyclerMultiConfig(
 }
 
 private fun <I : Any, BT : ViewDataBinding> Fragment.getFragmentRecyclerConfigBuilder(
-    block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit
-): DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT> {
+    block: ItemsBindingConfig<I, BT>.() -> Unit
+): ItemsBindingConfig<I, BT> {
     return getRecyclerConfigBuilder(block).apply {
         lifecycleOwner = viewLifecycleOwner
     }
-}
-
-fun <I : Any, BT : ViewDataBinding> getRecyclerConfigBuilder(
-    block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit
-): DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
 }
 
 fun Context.findPrimaryFragment(): Fragment? {

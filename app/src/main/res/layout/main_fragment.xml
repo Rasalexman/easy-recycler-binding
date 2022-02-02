@@ -66,6 +66,14 @@
             android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
+            android:text="@string/button_title_vp2_paging"
+            android:onClick="@{() -> vm.onVp2PagingButtonClicked()}"
+            />
+
+        <Button
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
             android:text="@string/button_title_paging"
             android:onClick="@{() -> vm.onPagingButtonClicked()}"
             />

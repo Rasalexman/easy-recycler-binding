@@ -12,6 +12,10 @@ class MainViewModel : BaseViewModel() {
         navigationState.value = MainFragmentDirections.showViewPager2Fragment()
     }
 
+    fun onVp2PagingButtonClicked() {
+        navigationState.value = MainFragmentDirections.showViewPager2PagingFragment()
+    }
+
     fun onRvButtonClicked() {
         navigationState.value = MainFragmentDirections.showRecyclerViewFragment()
     }

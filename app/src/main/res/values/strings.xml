@@ -6,6 +6,7 @@
     <string name="button_title_horizontal_recycler">Horizontal RV</string>
     <string name="button_title_vp">ViewPager</string>
     <string name="button_title_vp2">ViewPager2</string>
+    <string name="button_title_vp2_paging">ViewPager2Paging</string>
     <string name="button_title_paging">Paging</string>
 
     <string name="button_title_sing_in">Sing in</string>

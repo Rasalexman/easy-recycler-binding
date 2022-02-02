@@ -5,14 +5,14 @@ import androidx.paging.map
 import com.rasalexman.erb.common.IUseCase
 import com.rasalexman.erb.data.IPageRepository
 import com.rasalexman.erb.data.PageRepository
-import com.rasalexman.erb.models.IRecyclerItem
+import com.rasalexman.erb.models.RecyclerItemUI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GetFlowPagerDataUseCase(
     private val pageRepository: IPageRepository = PageRepository()
 ) : IGetFlowPagerDataUseCase {
-    override suspend fun invoke(): Flow<PagingData<IRecyclerItem>> {
+    override suspend fun invoke(): Flow<PagingData<RecyclerItemUI>> {
         return pageRepository.getPageFlowItemsSource().map { pageData ->
             pageData.map { it.convert() }
         }
@@ -20,4 +20,4 @@ class GetFlowPagerDataUseCase(
 
 }
 
-interface IGetFlowPagerDataUseCase : IUseCase.SOut<Flow<PagingData<IRecyclerItem>>>
+interface IGetFlowPagerDataUseCase : IUseCase.SOut<Flow<PagingData<RecyclerItemUI>>>

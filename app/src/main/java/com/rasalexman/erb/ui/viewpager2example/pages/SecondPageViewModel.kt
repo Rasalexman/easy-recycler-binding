@@ -1,6 +1,5 @@
 package com.rasalexman.erb.ui.viewpager2example.pages
 
-import androidx.core.text.toSpanned
 import androidx.lifecycle.*
 import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.IBindingModel
@@ -15,7 +14,6 @@ import com.rasalexman.erb.ui.main.MainFragmentDirections
 import com.rasalexman.erb.ui.viewpager2example.SearchState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.util.*

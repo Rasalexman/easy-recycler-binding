@@ -27,6 +27,7 @@ import java.util.*
 import kotlin.math.abs
 
 typealias ItemsConfig<I> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, ViewDataBinding>
+typealias ItemsBindingConfig<I, B> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, B>
 
 val changeCallbackMap = WeakHashMap<String, CustomPageChangeCallback>(3)
 
@@ -276,7 +277,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
     return oldItems ?: mutableListOf()
 }
 
-private fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
+internal fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
     items: List<ItemType>
 ): RecyclerView.Adapter<*> {
     val erbAdapter = ErbAdapter(
@@ -371,45 +372,7 @@ private fun <ItemType : Any> applyData(
     adapter.notifyItemRangeChanged(0, notifySize)
 }
 
-fun <I : Any, BT : ViewDataBinding> recyclerConfig(block: DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>.() -> Unit): DataBindingRecyclerViewConfig<BT> {
-    return DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, BT>().apply(block)
-        .build().also {
-            if (it.layoutId == -1) {
-                throw IllegalStateException("layoutId is not set for viewHolders adapter")
-            }
-        }
-}
 
-fun <I : ILoadStateModel> createStateAdapter(
-    item: I,
-    lifecycleOwner: LifecycleOwner? = null,
-    block: ItemsConfig<I>.() -> Unit
-): DataBindingLoadStateAdapter<I> {
-    return ItemsConfig<I>().apply(block).also {
-        it.adapterType = BindingAdapterType.LOADING
-        it.lifecycleOwner = lifecycleOwner
-    }.build().asLoadingAdapter(item)
-}
-
-fun <I : ILoadStateModel> Fragment.createStateLoadingAdapter(
-    item: I,
-    block: ItemsConfig<I>.() -> Unit
-): DataBindingLoadStateAdapter<I> {
-    return createStateAdapter(item, viewLifecycleOwner, block)
-}
-
-private fun <I : ILoadStateModel> DataBindingRecyclerViewConfig<ViewDataBinding>.asLoadingAdapter(
-    item: I
-): DataBindingLoadStateAdapter<I> {
-    return (createAdapter(items = listOf(item)) as DataBindingLoadStateAdapter<I>)
-        .apply {
-            loadState = item.loadState
-        }
-}
-
-fun recyclerMultiConfig(block: ItemsConfig<IBindingModel>.() -> Unit): DataBindingRecyclerViewConfig<ViewDataBinding> {
-    return ItemsConfig<IBindingModel>().apply(block).build()
-}
 
 fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.findPagingAdapter(): PagingDataAdapter<ItemType, BindingViewHolder>? {
     return this.adapter?.getPagingAdapter<ItemType, BindingType>()

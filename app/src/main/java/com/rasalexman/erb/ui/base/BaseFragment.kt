@@ -17,9 +17,9 @@ abstract class BaseFragment<VM : BaseViewModel> : Fragment() {
     }
 
     protected fun observeNavigation(viewModel: BaseViewModel) {
-        viewModel.navigationState.observe(viewLifecycleOwner, {
+        viewModel.navigationState.observe(viewLifecycleOwner) {
             navigateToDirection(viewModel, it)
-        })
+        }
     }
 
     protected open fun navigateToDirection(viewModel:BaseViewModel, direction: NavDirections?) {
