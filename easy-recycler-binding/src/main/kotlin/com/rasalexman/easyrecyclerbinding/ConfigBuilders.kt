@@ -64,7 +64,7 @@ fun pagingMultiConfig(block: ItemsConfig<IBindingModel>.() -> Unit): DataBinding
     }
 }
 
-fun <I : Any, BT : ViewDataBinding> getRecyclerConfigBuilder(
+internal fun <I : Any, BT : ViewDataBinding> getRecyclerConfigBuilder(
     block: ItemsBindingConfig<I, BT>.() -> Unit
 ): ItemsBindingConfig<I, BT> {
     return ItemsBindingConfig<I, BT>().apply(block)

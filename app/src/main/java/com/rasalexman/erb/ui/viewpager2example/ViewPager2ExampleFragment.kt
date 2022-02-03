@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.viewModels
-import com.rasalexman.easyrecyclerbinding.changeCallbackMap
 import com.rasalexman.easyrecyclerbinding.createRecyclerMultiConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.MainActivity
@@ -107,6 +106,10 @@ class ViewPager2ExampleFragment :
     override fun setupViewPagerConfig(binding: Vp2ExampleFragmentBinding) {
         binding.vpConfig = createRecyclerMultiConfig {
             itemId = BR.vm
+
+            onPageSelectedListener = {
+                viewModel.onPageSelected(it)
+            }
         }
     }
 
@@ -115,13 +118,6 @@ class ViewPager2ExampleFragment :
         searchViewItem?.setOnQueryTextListener(null)
         searchMenuItem = null
         searchViewItem = null
-
-        val callbackKey = binding?.viewpager2.hashCode().toString()
-        changeCallbackMap[callbackKey]?.let {
-            it.onPageSelectedCallback = null
-            binding?.viewpager2?.unregisterOnPageChangeCallback(it)
-            changeCallbackMap.remove(callbackKey)
-        }
         super.onDestroyView()
     }
 }

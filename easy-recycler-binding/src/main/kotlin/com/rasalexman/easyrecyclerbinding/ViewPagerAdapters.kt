@@ -1,4 +1,5 @@
 @file:Suppress("UNCHECKED_CAST", "unused", "MemberVisibilityCanBePrivate")
+
 package com.rasalexman.easyrecyclerbinding
 
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.viewpager.widget.ViewPager
 import com.rasalexman.easyrecyclerbinding.adapters.DynamicViewPagerAdapter
 import com.rasalexman.easyrecyclerbinding.adapters.ViewPagerAdapter
+import com.rasalexman.easyrecyclerbinding.common.CustomVPPageChangeListener
 
 
 @BindingAdapter(
@@ -33,32 +35,33 @@ fun setupViewPager(
         viewPager.apply {
             adapter = getViewPagerAdapter(viewPagerSettings)
             val pagesScreenOffset = viewPagerSettings.getDefaultScreenOffset()
-            if(pagesScreenOffset == DEFAULT_CONFIG_PAGES_OFFSET) {
-                offscreenPageLimit = viewPagerSettings.countTab()
-            } else if(pagesScreenOffset >= 0) {
-                offscreenPageLimit = pagesScreenOffset
+            offscreenPageLimit = when {
+                pagesScreenOffset == DEFAULT_CONFIG_PAGES_OFFSET -> viewPagerSettings.countTab()
+                pagesScreenOffset >= 0 -> pagesScreenOffset
+                else -> DEFAULT_PAGES_OFFSET
             }
 
             tabPosition?.let {
                 if (it != currentItem) {
                     setCurrentItem(it, false)
                 }
+                pageSelectionListener?.onPageSelected(it)
             }
-
-            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-                override fun onPageScrollStateChanged(state: Int) = Unit
-                override fun onPageScrolled(
-                    position: Int,
-                    positionOffset: Float,
-                    positionOffsetPixels: Int
-                ) = Unit
-
-                override fun onPageSelected(position: Int) {
-                    changeListener?.onChange()
-                    pageSelectionListener?.onPageSelected(position)
-                }
-            })
         }
+
+        val pageChangeListener = CustomVPPageChangeListener { position ->
+            changeListener?.onChange()
+            pageSelectionListener?.onPageSelected(position)
+        }
+        viewPager.addOnPageChangeListener(pageChangeListener)
+        viewPager.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(p0: View?) = Unit
+            override fun onViewDetachedFromWindow(p0: View?) {
+                pageChangeListener.clear()
+                viewPager.removeOnPageChangeListener(pageChangeListener)
+                viewPager.removeOnAttachStateChangeListener(this)
+            }
+        })
 
     } else {
         tabPosition?.let {
@@ -94,6 +97,7 @@ interface ViewPagerSettings {
 }
 
 private const val DEFAULT_CONFIG_PAGES_OFFSET = -1
+private const val DEFAULT_PAGES_OFFSET = 1
 
 open class ViewPagerConfig(
     private val pageCreator: (container: ViewGroup, position: Int) -> View,

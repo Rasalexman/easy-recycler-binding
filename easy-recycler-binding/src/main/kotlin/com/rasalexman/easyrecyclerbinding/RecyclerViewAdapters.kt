@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.rasalexman.easyrecyclerbinding.adapters.*
 import com.rasalexman.easyrecyclerbinding.common.BindingAdapterType
-import com.rasalexman.easyrecyclerbinding.common.CustomPageChangeCallback
+import com.rasalexman.easyrecyclerbinding.common.CustomVP2PageChangeListener
 import com.rasalexman.easyrecyclerbinding.common.EndlessRecyclerOnScrollListener
 import com.rasalexman.easyrecyclerbinding.common.ScrollPositionObserver
 import java.util.*
@@ -29,7 +29,7 @@ import kotlin.math.abs
 typealias ItemsConfig<I> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, ViewDataBinding>
 typealias ItemsBindingConfig<I, B> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, B>
 
-val changeCallbackMap = WeakHashMap<String, CustomPageChangeCallback>(3)
+val changeCallbackMap = WeakHashMap<String, CustomVP2PageChangeListener>(3)
 
 @BindingAdapter(
     value = ["items", "vp_config"],
@@ -61,13 +61,21 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
 
         val callbackKey = viewPager.hashCode().toString()
         val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
-            CustomPageChangeCallback().apply {
+            CustomVP2PageChangeListener().apply {
                 onPageScrolledCallback = dataBindingRecyclerViewConfig.onScrollListener
                 onPageScrollStateCallback = dataBindingRecyclerViewConfig.onPageScrollStateListener
                 onPageSelectedCallback = dataBindingRecyclerViewConfig.onPageSelectedListener
             }
         }
         viewPager.registerOnPageChangeCallback(lastCallback)
+        viewPager.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(p0: View?) = Unit
+            override fun onViewDetachedFromWindow(p0: View?) {
+                viewPager.unregisterOnPageChangeCallback(lastCallback)
+                changeCallbackMap.remove(callbackKey)?.clear()
+                viewPager.removeOnAttachStateChangeListener(this)
+            }
+        })
     }
 
     viewPager.adapter?.applyAdapterData(
@@ -91,7 +99,7 @@ fun setSelectedPosition(
 
     val callbackKey = viewPager.hashCode().toString()
     val pageChangeCallback = changeCallbackMap[callbackKey]
-    pageChangeCallback?.onPageSelectedCallback = {
+    pageChangeCallback?.onPageInverseCallback = {
         changeListener?.onChange()
     }
 }

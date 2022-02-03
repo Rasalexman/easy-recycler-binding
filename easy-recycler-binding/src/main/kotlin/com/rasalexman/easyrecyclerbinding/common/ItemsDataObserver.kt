@@ -13,6 +13,7 @@ internal class ItemsDataObserver(
     private val scrollPositionWeakRef = WeakReference(scrollPosition)
     private val recyclerWeakRef = WeakReference(recyclerView)
     private val scrollListenerWeakRef = WeakReference(scrollListener)
+    private var isFirstInsert = false
 
     override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
         resetScrollListenerTotalCount()
@@ -20,9 +21,18 @@ internal class ItemsDataObserver(
 
     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
         if (positionStart == 0) {
+            isFirstInsert = false
+        }
+        if(itemCount > 0) {
             resetScrollListenerTotalCount()
-            // will be removed in future releases
-            //changeScrollPosition(itemCount)
+        }
+
+        if(!isFirstInsert && itemCount > 0) {
+            val scrollIndex = scrollPositionWeakRef.get()?.index ?: 0
+            if(scrollIndex > 0) {
+                isFirstInsert = true
+                changeScrollPosition(itemCount)
+            }
         }
     }
 

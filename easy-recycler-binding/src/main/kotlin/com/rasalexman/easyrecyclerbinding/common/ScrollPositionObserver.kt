@@ -12,6 +12,7 @@ import com.rasalexman.easyrecyclerbinding.ScrollPosition
 import com.rasalexman.easyrecyclerbinding.clearAdapter
 import java.lang.ref.WeakReference
 
+@Suppress("unused")
 internal class ScrollPositionObserver(
     lifecycleOwner: LifecycleOwner,
     recyclerView: RecyclerView,
@@ -41,7 +42,8 @@ internal class ScrollPositionObserver(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onLifecycleOwnerResumed() {
-        adapterDataObserver?.changeScrollPosition(1)
+        val resumedItemsCount = recyclerWeakRef.get()?.adapter?.itemCount ?: 0
+        adapterDataObserver?.changeScrollPosition(resumedItemsCount)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)

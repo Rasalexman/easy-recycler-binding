@@ -1,5 +1,3 @@
-import resources.Resources.codeDirs
-
 plugins {
     id("com.android.library")
     kotlin("android")
@@ -7,15 +5,23 @@ plugins {
     id("maven-publish")
 }
 
+val appVersion: String by rootProject.extra
+group = "com.rasalexman.easyrecyclerbinding"
+version = appVersion
+
 android {
-    compileSdk = appdependencies.Builds.COMPILE_VERSION
+    val buildSdkVersion: Int by extra
+    val minSdkVersion: Int by extra
+    val appVersion: String by extra
+
+    compileSdk = buildSdkVersion
+
     defaultConfig {
-        minSdk = appdependencies.Builds.MIN_VERSION
-        targetSdk = appdependencies.Builds.TARGET_VERSION
-        version = appdependencies.Builds.ERB.VERSION_NAME
-        //versionCode = appdependencies.Builds.ERB.VERSION_CODE
-        //versionName = appdependencies.Builds.ERB.VERSION_NAME
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        minSdk = minSdkVersion
+        targetSdk = buildSdkVersion
+        version = appVersion
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         getByName("debug") {
@@ -43,7 +49,7 @@ android {
     }
 
     // Declare the task that will monitor all configurations.
-    configurations.all {
+    /*configurations.all {
         // 2 Define the resolution strategy in case of conflicts.
         resolutionStrategy {
             // Fail eagerly on version conflict (includes transitive dependencies),
@@ -53,18 +59,13 @@ android {
             // Prefer modules that are part of this build (multi-project or composite build) over external modules.
             preferProjectModules()
         }
-    }
+    }*/
 
+    val codePath: String by rootProject.extra
     sourceSets {
         getByName("main") {
-            java.setSrcDirs(codeDirs)
+            java.setSrcDirs(listOf(codePath))
         }
-    }
-
-    kotlinOptions {
-        languageVersion = "1.6"
-        apiVersion = "1.6"
-        jvmTarget = "11"
     }
 
     buildFeatures {
@@ -73,17 +74,19 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
+    val viewpager2: String by rootProject.extra
+    val recyclerview: String by rootProject.extra
+    val coroutines: String by rootProject.extra
+    val fragmentKtx: String by rootProject.extra
+    val paging: String by rootProject.extra
 
-    implementation(appdependencies.Libs.Core.viewPager2)
-    implementation(appdependencies.Libs.Core.recyclerView)
-    implementation(appdependencies.Libs.Core.coroutines)
-    implementation(appdependencies.Libs.Core.fragment_ktx)
-    implementation(appdependencies.Libs.Core.paging3)
+    implementation(viewpager2)
+    implementation(recyclerview)
+    implementation(coroutines)
+    implementation(fragmentKtx)
+    implementation(paging)
+    //implementation("androidx.databinding:databinding-ktx:7.2.0-beta01")
 }
-
-group = "com.rasalexman.easyrecyclerbinding"
-version = appdependencies.Builds.ERB.VERSION_NAME
 
 tasks.register<Jar>(name = "sourceJar") {
     from(android.sourceSets["main"].java.srcDirs)
@@ -93,7 +96,7 @@ tasks.register<Jar>(name = "sourceJar") {
 java {
     sourceSets {
         create("main") {
-            java.setSrcDirs(codeDirs)
+            java.setSrcDirs(android.sourceSets["main"].java.srcDirs)
         }
     }
 
@@ -114,8 +117,8 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding"
-                version = appdependencies.Builds.ERB.VERSION_NAME
-                //artifact("$buildDir/outputs/aar/easy-recycler-binding-release.aar")
+                version = appVersion
+
                 artifact(tasks["sourceJar"])
             }
             create<MavenPublication>("debug") {
@@ -124,8 +127,8 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = "com.rasalexman.easyrecyclerbinding"
                 artifactId = "easyrecyclerbinding-debug"
-                version = appdependencies.Builds.ERB.VERSION_NAME
-                //artifact("$buildDir/outputs/aar/easy-recycler-binding-debug.aar")
+                version = appVersion
+
                 artifact(tasks["sourceJar"])
             }
         }

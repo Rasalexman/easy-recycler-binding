@@ -64,6 +64,5 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
 
     companion object {
         private const val PAGE_FIRST = 0
-        private const val PAGE_SECOND = 1
     }
 }

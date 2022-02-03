@@ -35,7 +35,7 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_strip"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="56dp"
                 android:background="@color/colorBottomPanelBackground"
                 android:elevation="0dp"
                 app:tabIndicatorColor="@color/colorTabIndicator"

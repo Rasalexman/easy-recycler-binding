@@ -1,11 +1,4 @@
-import appdependencies.Builds.APP_ID
-import appdependencies.Builds.COMPILE_VERSION
-import appdependencies.Builds.MIN_VERSION
-import appdependencies.Builds.TARGET_VERSION
-import appdependencies.Libs
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import resources.Resources.App.dirs
 
 plugins {
     id("com.android.application")
@@ -15,16 +8,24 @@ plugins {
 }
 
 android {
-    compileSdk = COMPILE_VERSION
+
+    val buildSdkVersion: Int by extra
+    val minSdkVersion: Int by extra
+    val appVersion: String by extra
+    val codePath: String by extra
+    val resPath: String by extra
+
+    compileSdk = buildSdkVersion
     defaultConfig {
-        applicationId = APP_ID
-        minSdk = MIN_VERSION
-        targetSdk = TARGET_VERSION
-        //versionCode = appdependencies.Builds.App.VERSION_CODE
-        version = appdependencies.Builds.App.VERSION_NAME
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        applicationId = "com.rasalexman.easyrecyclerbinding"
+        minSdk = minSdkVersion
+        targetSdk = buildSdkVersion
+        version = appVersion
         multiDexEnabled = true
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -39,11 +40,13 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.setSrcDirs(arrayListOf(
+            java.setSrcDirs(
+                listOf(
                     "${buildDir.absolutePath}/generated/source/kaptKotlin/",
-                    "src/main/java"
-            ))
-            res.setSrcDirs(dirs)
+                    codePath
+                )
+            )
+            res.setSrcDirs(listOf(resPath))
         }
     }
 
@@ -70,16 +73,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
-        languageVersion = "1.6"
-        apiVersion = "1.6"
-    }
-
-    tasks.withType<KotlinCompile>().all {
-        kotlinOptions.suppressWarnings = true
-    }
-
     packagingOptions {
         resources.excludes.add("META-INF/notice.txt")
     }
@@ -102,32 +95,43 @@ android {
     }
 }
 
-kapt {
-    useBuildCache = true
-}
-
 dependencies {
 
     implementation(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
-    //implementation(kotlin("stdlib-jdk8", Versions.kotlin))
 
-    implementation(Libs.Core.coreKtx)
-    implementation(Libs.Core.fragment_ktx)
-    implementation(Libs.Core.recyclerView)
-    implementation(Libs.Core.constraintlayout)
-    implementation(Libs.Core.navigationFragmentKtx)
-    implementation(Libs.Core.navigationUiKtx)
-    implementation(Libs.Core.viewPager2)
-    implementation(Libs.Core.material)
-    implementation(Libs.Core.livedataKtx)
-    implementation(Libs.Core.viewmodelKtx)
-    implementation(Libs.Core.paging3)
+    val viewpager2: String by rootProject.extra
+    val recyclerview: String by rootProject.extra
+    val coroutines: String by rootProject.extra
+    val fragmentKtx: String by rootProject.extra
+    val paging: String by rootProject.extra
+    val coreKtx: String by rootProject.extra
+    val constraintlayout: String by rootProject.extra
+    val navigationFragment: String by rootProject.extra
+    val navigationUI: String by rootProject.extra
+    val material: String by rootProject.extra
+    val livedataKtx: String by rootProject.extra
+    val viewmodelKtx: String by rootProject.extra
+    val leakCanary: String by rootProject.extra
+
+    implementation(viewpager2)
+    implementation(recyclerview)
+    implementation(coroutines)
+    implementation(fragmentKtx)
+    implementation(paging)
+    implementation(coreKtx)
+    implementation(constraintlayout)
+    implementation(navigationFragment)
+    implementation(navigationUI)
+    implementation(material)
+    implementation(livedataKtx)
+    implementation(viewmodelKtx)
+
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
 
     implementation(project(":easy-recycler-binding"))
 
-    debugImplementation(Libs.Tests.leakCanary)
-    testImplementation(Libs.Tests.junit)
-    androidTestImplementation(Libs.Tests.runner)
-    androidTestImplementation(Libs.Tests.espresso)
+    debugImplementation(leakCanary)
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }
