@@ -10,16 +10,32 @@ import com.rasalexman.erb.common.StringUtils
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.SimpleRecyclerItemUI
 import com.rasalexman.erb.ui.base.BaseItemsViewModel
-import com.rasalexman.erb.ui.main.MainFragmentDirections
 import com.rasalexman.erb.ui.viewpager2example.SearchState
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.delay
 import java.util.*
 import kotlin.random.Random
 
 class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
+
+    private val diffCallback by lazy {
+        object : DiffCallback<SimpleRecyclerItemUI>() {
+            override fun areItemsTheSame(
+                oldItem: SimpleRecyclerItemUI,
+                newItem: SimpleRecyclerItemUI
+            ): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(
+                oldItem: SimpleRecyclerItemUI,
+                newItem: SimpleRecyclerItemUI
+            ): Boolean {
+                return oldItem.descriptionText == newItem.descriptionText
+            }
+        }
+    }
+
     override val layoutResId: Int
         get() = R.layout.item_vp2_second_page
 
@@ -30,10 +46,11 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     val currentQuery: String
         get() = searchQuery.value.orEmpty()
 
-    @FlowPreview
-    val currentItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
-        liveData(Dispatchers.Default) {
-            searchQuery.asFlow().debounce(200L).distinctUntilChanged().collect { query -> //
+    val foundItems: LiveData<List<IRecyclerItem>> = items.switchMap { list ->
+        searchQuery.distinctUntilChanged().switchMap { query ->
+            liveData(Dispatchers.Default) {
+                showLoading()
+                delay(300L)
                 val currentList = if (query.isEmpty()) {
                     list
                 } else {
@@ -49,7 +66,8 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     }
 
     override val itemsCount: LiveData<String> by lazy {
-        currentItems.map {
+        foundItems.map {
+            hideLoading()
             "Items count: ${it.size}"
         }
     }
@@ -61,35 +79,14 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
     fun createRvConfig() = recyclerMultiConfig {
         itemId = BR.item
         layoutId = R.layout.item_simple_recycler
+        diffUtilCallback = diffCallback
 
         onItemClick = { item, _ ->
-            item as IRecyclerItem
-            navigationState.value =
-                MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
+            onShowSelectedBindingItemFragment(item)
         }
 
         onModelBind = { model, pos ->
             println("----> Model binded on pos = $pos with id = ${model::class.simpleName}")
-        }
-
-        //isLifecyclePending = true
-
-        diffUtilCallback = object : DiffCallback<SimpleRecyclerItemUI>() {
-            override fun areItemsTheSame(
-                oldItem: SimpleRecyclerItemUI,
-                newItem: SimpleRecyclerItemUI
-            ): Boolean {
-                val idsEqual = oldItem.id == newItem.id
-                return idsEqual
-            }
-
-            override fun areContentsTheSame(
-                oldItem: SimpleRecyclerItemUI,
-                newItem: SimpleRecyclerItemUI
-            ): Boolean {
-                val descEqual = oldItem.descriptionText == newItem.descriptionText
-                return descEqual
-            }
         }
     }
 

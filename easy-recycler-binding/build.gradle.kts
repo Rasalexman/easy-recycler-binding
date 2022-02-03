@@ -80,12 +80,11 @@ dependencies {
     val fragmentKtx: String by rootProject.extra
     val paging: String by rootProject.extra
 
-    implementation(viewpager2)
-    implementation(recyclerview)
+    compileOnly(viewpager2)
+    compileOnly(recyclerview)
     implementation(coroutines)
-    implementation(fragmentKtx)
-    implementation(paging)
-    //implementation("androidx.databinding:databinding-ktx:7.2.0-beta01")
+    compileOnly(fragmentKtx)
+    compileOnly(paging)
 }
 
 tasks.register<Jar>(name = "sourceJar") {

@@ -4,10 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import com.rasalexman.easyrecyclerbinding.ScrollPosition
+import com.rasalexman.easyrecyclerbinding.IBindingModel
 import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.RecyclerItemUI
 import com.rasalexman.erb.models.RecyclerItemUI2
+import com.rasalexman.erb.ui.main.MainFragmentDirections
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +33,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {
+                showLoading()
                 val itemCounts = Random.nextInt(minItems, maxItems)
                 repeat(itemCounts) {
                     itemsList.add(itemsCreator(it))
@@ -42,17 +44,18 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                     //val randomIndex = Random.nextInt(0, minItems)
                     itemsList.addAll(0, subs)
                 }*/
-                println("------> itemsList size = ${itemsList.size}")
-                items.postValue(itemsList)
+                println("------> createItemsList size = ${itemsList.size}")
+                postItems(itemsList)
             }
         }
     }
 
-    fun addItems(minItems: Int = 20, maxItems: Int = 100, atFirst: Boolean = true) {
+    fun addItems(minItems: Int = 14, maxItems: Int = 100, atFirst: Boolean = true) {
+        showLoading()
         viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {
-                val itemCounts = 14//Random.nextInt(minItems, maxItems)
+                val itemCounts = Random.nextInt(minItems, maxItems)
                 repeat(itemCounts) {
                     itemsList.add(itemsCreator(it))
                 }
@@ -60,12 +63,13 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                 if(atFirst) lastList.addAll(0, itemsList)
                 else lastList.addAll(itemsList)
                 println("------> [added] at first = $atFirst | size = ${lastList.size}")
-                items.postValue(lastList)
+                postItems(lastList)
             }
         }
     }
 
     fun onRemoveClicked(atFirst: Boolean = true) {
+        showLoading()
         viewModelScope.launch {
             val lastList = items.value.orEmpty().toMutableList()
             if(lastList.isNotEmpty()) {
@@ -75,12 +79,17 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                 lastList.removeAll(subList)
                 println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
             }
-            items.postValue(lastList)
+            postItems(lastList)
         }
     }
 
     fun clearItems() {
-        items.postValue(emptyList())
+        postItems(emptyList())
+    }
+
+    protected open fun postItems(freshItems: List<IRecyclerItem>) {
+        items.postValue(freshItems)
+        hideLoading()
     }
 
     protected open suspend fun itemsCreator(position: Int): IRecyclerItem {
@@ -96,5 +105,15 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
                 id = nextId
             )
         }
+    }
+
+    fun onShowSelectedBindingItemFragment(item: IBindingModel) {
+        (item as? IRecyclerItem)?.let {
+            onShowSelectedRecyclerItemFragment(it)
+        }
+    }
+
+    fun onShowSelectedRecyclerItemFragment(item: IRecyclerItem) {
+        navigationState.value = MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
     }
 }

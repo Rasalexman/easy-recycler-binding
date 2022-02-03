@@ -17,6 +17,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_text_dark"
+            android:textColorHint="@color/color_hint"
+            android:textSize="14sp"
+            android:layout_marginVertical="12dp"
+            android:paddingHorizontal="16dp"
+            android:layout_marginHorizontal="48dp"
+            android:gravity="center"
+            android:text="@{vm.authText}"
+            />
+
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
@@ -26,14 +39,12 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginVertical="12dp"
                 android:gravity="center_vertical|start"
                 android:hint="@string/hint_enter_login"
                 android:maxLines="1"
                 android:text="@={vm.login}"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:paddingHorizontal="16dp"
                 android:textColor="@color/color_text_dark"
                 android:textColorHint="@color/color_hint"
                 android:textSize="14sp" />
@@ -49,15 +60,13 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginVertical="12dp"
                 android:gravity="center_vertical|start"
                 android:hint="@string/hint_enter_password"
                 android:maxLines="1"
                 android:inputType="textPassword"
                 android:text="@={vm.password}"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:paddingHorizontal="16dp"
                 android:textColor="@color/color_text_dark"
                 android:textColorHint="@color/color_hint"
                 android:textSize="14sp" />
@@ -69,6 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
+            android:enabled="@{vm.isButtonEnabled}"
             android:text="@string/button_title_sing_in"
             android:onClick="@{() -> vm.onSingInButtonClicked()}"
             />

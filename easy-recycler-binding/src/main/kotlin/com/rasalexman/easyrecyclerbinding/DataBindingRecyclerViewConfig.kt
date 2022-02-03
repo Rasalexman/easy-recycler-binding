@@ -65,41 +65,64 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var isLifecyclePending: Boolean = true
         var isReverseLayout: Boolean = false
         var onAdapterAdded: ((RecyclerView.Adapter<*>) -> Unit)? = null
-
         var stateFooterAdapter: DataBindingLoadStateAdapter<ILoadStateModel>? =
             null
         var stateHeaderAdapter: DataBindingLoadStateAdapter<ILoadStateModel>? =
             null
 
+        private val isHasRealisationCallbacks: Boolean
+            get() = onItemCreate != null || onItemBind != null
+                    || onItemUnbind != null || onModelBind != null
+
+        @Throws(NullPointerException::class)
         fun build(): DataBindingRecyclerViewConfig<BT> {
+            // check for itemId !!!
+            val currentItemId = itemId
+                ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null")
+            // current layoutId
+            val currentLayoutId = layoutId ?: -1
 
+            val onItemClickHandler = createOnItemClickHandler()
+            val onItemDoubleClickHandler = createOnItemDoubleClickHandler()
+            val onItemLongClickHandler = createOnItemLongClickHandler()
+            val realisationHandlers = createRealisationHandlers()
+
+            // create a full config object
             return DataBindingRecyclerViewConfig(
-                layoutId = layoutId ?: -1,
-                itemId = itemId
-                    ?: throw NullPointerException("DataBindingRecyclerViewConfig::itemId must not be null"),
-                adapterType = adapterType,
-                lifecycleOwner = lifecycleOwner,
-                orientation = orientation,
-                doubleClickDelayTime = doubleClickDelayTime,
-                consumeLongClick = consumeLongClick,
-                layoutManager = layoutManager,
+                layoutId = currentLayoutId,
+                itemId = currentItemId,
+                adapterType = this.adapterType,
+                lifecycleOwner = this.lifecycleOwner,
+                orientation = this.orientation,
+                doubleClickDelayTime = this.doubleClickDelayTime,
+                consumeLongClick =this. consumeLongClick,
+                layoutManager = this.layoutManager,
                 onScrollListener = onLoadMore,
-                onPageSelectedListener = onPageSelectedListener,
-                onPageScrollStateListener = onPageScrollStateListener,
+                onPageSelectedListener = this.onPageSelectedListener,
+                onPageScrollStateListener = this.onPageScrollStateListener,
                 recyclerOnScrollListener = onScrollListener,
-                itemAnimator = itemAnimator,
-                itemDecorator = itemDecorator,
-                diffUtilCallback = diffUtilCallback,
-                diffItemsUtilCallback = diffItemUtilCallback,
-                hasFixedSize = hasFixedSize,
-                isLifecyclePending = isLifecyclePending,
-                isReverseLayout = isReverseLayout,
+                itemAnimator = this.itemAnimator,
+                itemDecorator = this.itemDecorator,
+                diffUtilCallback = this.diffUtilCallback,
+                diffItemsUtilCallback = this.diffItemUtilCallback,
+                hasFixedSize = this.hasFixedSize,
+                isLifecyclePending = this.isLifecyclePending,
+                isReverseLayout = this.isReverseLayout,
 
-                stateFooterAdapter = stateFooterAdapter,
-                stateHeaderAdapter = stateHeaderAdapter,
+                stateFooterAdapter = this.stateFooterAdapter,
+                stateHeaderAdapter = this.stateHeaderAdapter,
 
-                realisation = object : DataBindingAdapter<BT> {
+                realisation = realisationHandlers,
+                onItemClickListener = onItemClickHandler,
+                onItemDoubleClickListener = onItemDoubleClickHandler,
+                onItemLongClickListener = onItemLongClickHandler,
+                onAdapterAdded = this.onAdapterAdded
+            )
+        }
 
+        private fun createRealisationHandlers(): DataBindingAdapter<BT>? {
+            return isHasRealisationCallbacks.takeIf { it }?.run {
+                object : DataBindingAdapter<BT> {
                     override fun onCreate(binding: BT) {
                         onItemCreate?.invoke(binding)
                     }
@@ -120,33 +143,47 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                             }
                         }
                     }
-                },
-                onItemClickListener = object : OnRecyclerItemClickListener {
+                }
+            }
+        }
+
+        private fun createOnItemClickHandler(): OnRecyclerItemClickListener? {
+            return onItemClick?.let { currentClickCallback ->
+                object : OnRecyclerItemClickListener {
                     override fun <T : Any> onItemClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {
-                            onItemClick?.invoke(it, position)
+                            currentClickCallback.invoke(it, position)
                         }
                     }
-                },
-                onItemDoubleClickListener = object : OnRecyclerItemDoubleClickListener {
+                }
+            }
+        }
+
+        private fun createOnItemDoubleClickHandler(): OnRecyclerItemDoubleClickListener? {
+            return onItemDoubleClicked?.let { currentDoubleCallback ->
+                object : OnRecyclerItemDoubleClickListener {
                     override fun <T : Any> onItemDoubleClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {
-                            onItemDoubleClicked?.invoke(it, position)
+                            currentDoubleCallback.invoke(it, position)
                         }
                     }
-                },
-                onItemLongClickListener = object : OnRecyclerItemLongClickListener {
+                }
+            }
+        }
+
+        private fun createOnItemLongClickHandler(): OnRecyclerItemLongClickListener? {
+            return onItemLongClickListener?.let { currentLongCallback ->
+                object : OnRecyclerItemLongClickListener {
                     override fun <T : Any> onItemLongClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {
-                            onItemLongClickListener?.invoke(it, position)
+                            currentLongCallback.invoke(it, position)
                         }
                     }
-                },
-                onAdapterAdded = onAdapterAdded
-            )
+                }
+            }
         }
     }
 }

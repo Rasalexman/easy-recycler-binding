@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IntRange
+import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.findFragment
@@ -30,6 +31,10 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
 
     var onGetItemHandler: ((Int) -> ItemType?)? = null
     var onGetItemsCountHandler: (() -> Int)? = null
+
+    private val hasClicksListeners: Boolean = onItemClickListener != null
+                || onItemLongClickListener != null
+                || onItemDoubleClickListener != null
 
     private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
     private var layoutInflater: WeakReference<LayoutInflater>? = null
@@ -95,74 +100,92 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         val holder = BindingViewHolder(binding)
         onCreate(binding)
 
-        val clickListener = object : ViewClickersListener(
-            hasDoubleClickListener = onItemDoubleClickListener != null,
-            doubleClickDelayTime = doubleClickDelayTime,
-            consumeLongClick = consumeLongClick
-        ) {
-
-            override fun onSingleClicked() {
-                onItemClickListener?.apply {
-                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
-                    onItemClicked(getAdapterItem(position), position)
+        if (hasClicksListeners) {
+            val clickListener = setupHolderClickListeners(holder)
+            binding.root.apply {
+                if (onItemClickListener != null || onItemDoubleClickListener != null) {
+                    setOnClickListener(clickListener)
                 }
-            }
-
-            override fun onDoubleClicked() {
-                onItemDoubleClickListener?.apply {
-                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
-                    onItemDoubleClicked(getAdapterItem(position), position)
+                onItemLongClickListener?.let {
+                    setOnLongClickListener(clickListener)
                 }
-            }
-
-            override fun onLongClicked() {
-                onItemLongClickListener?.apply {
-                    val position = getViewHolderPosition(holder, holder.bindingAdapterPosition)
-                    onItemLongClicked(getAdapterItem(position), position)
-                }
-            }
-        }
-
-        binding.root.apply {
-            if (onItemClickListener != null || onItemDoubleClickListener != null) {
-                setOnClickListener(clickListener)
-            }
-            onItemLongClickListener?.let {
-                setOnLongClickListener(clickListener)
             }
         }
 
         return holder
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
-        val absolutePosition = getViewHolderPosition(holder, position)
-        val localBinding = holder.binding
-        val item = getAdapterItem(absolutePosition)
-        if (itemId != -1 && item != null) {
-            localBinding.setVariable(itemId, item)
-            onBindItem(item, absolutePosition)
-            onBind(localBinding as BindingType, absolutePosition)
-            if(isLifecyclePending) {
-                localBinding.executePendingBindings()
+    private fun setupHolderClickListeners(holder: BindingViewHolder): ViewClickersListener {
+        return object : ViewClickersListener(
+            hasDoubleClickListener = onItemDoubleClickListener != null,
+            doubleClickDelayTime = doubleClickDelayTime,
+            consumeLongClick = consumeLongClick
+        ) {
+            private var currentHolder: BindingViewHolder = holder
+
+            override fun onSingleClicked() {
+                onItemClickListener?.let {
+                    val (position, item) = getItemAndPosition()
+                    it.onItemClicked(item, position)
+                }
             }
+
+            override fun onDoubleClicked() {
+                onItemDoubleClickListener?.let {
+                    val (position, item) = getItemAndPosition()
+                    it.onItemDoubleClicked(item, position)
+                }
+            }
+
+            override fun onLongClicked() {
+                onItemLongClickListener?.let {
+                    val (position, item) = getItemAndPosition()
+                    it.onItemLongClicked(item, position)
+                }
+            }
+
+            private fun getItemAndPosition(): Pair<Int, ItemType?> {
+                val adapterPosition = currentHolder.bindingAdapterPosition
+                val position = getViewHolderPosition(currentHolder, adapterPosition)
+                val item = getAdapterItem(position)
+                return position to item
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
+        if (itemId != -1) {
+            val absolutePosition = getViewHolderPosition(holder, position)
+            val item = getAdapterItem(absolutePosition)
+            if (item != null) {
+                val localBinding = DataBindingUtil.getBinding<BindingType>(holder.itemView)
+                if (localBinding != null) {
+                    localBinding.setVariable(itemId, item)
+                    onBindItem(item, absolutePosition)
+                    onBind(localBinding, absolutePosition)
+                    if (isLifecyclePending) {
+                        localBinding.executePendingBindings()
+                    }
+                }
+            }
+        } else {
+            throw IllegalStateException("`itemId` is not set for RecyclerDataBindingAdapter")
         }
     }
 
     private fun getViewHolderPosition(holder: BindingViewHolder, position: Int): Int {
         val absolutePosition = holder.absoluteAdapterPosition
         val itemsCount = getItemCount()
-        return if(itemsCount < absolutePosition) {
+        return if (itemsCount < absolutePosition) {
             position
         } else {
             absolutePosition
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun onViewRecycled(holder: BindingViewHolder) {
-        onUnbind(holder.binding as BindingType)
+        val localBinding = DataBindingUtil.getBinding<BindingType>(holder.itemView)
+        localBinding?.let(::onUnbind)
     }
 
     override fun onCreate(binding: BindingType) {
@@ -187,17 +210,12 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun<T : Any> onBindItem(item: T?, position: Int) {
+    override fun <T : Any> onBindItem(item: T?, position: Int) {
         realisation?.onBindItem(item, position)
     }
 }
 
-class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root) {
-    private val currentBinding: WeakReference<ViewDataBinding> = WeakReference(vb)
-    val binding: ViewDataBinding
-        get() = currentBinding.get()
-            ?: throw NullPointerException("There is no binding for ViewHolder $this")
-}
+class BindingViewHolder(vb: ViewDataBinding) : RecyclerView.ViewHolder(vb.root)
 
 interface IErbAdapter<ItemType : Any, BindingType : ViewDataBinding> :
     DataBindingAdapter<BindingType>, ItemsBinderAdapter<ItemType> {
@@ -215,7 +233,7 @@ interface IErbAdapter<ItemType : Any, BindingType : ViewDataBinding> :
 interface DataBindingAdapter<BindingType : ViewDataBinding> {
     fun onCreate(binding: BindingType)
     fun onBind(binding: BindingType, position: Int)
-    fun<T : Any> onBindItem(item: T?, position: Int)
+    fun <T : Any> onBindItem(item: T?, position: Int)
     fun onUnbind(binding: BindingType)
 }
 

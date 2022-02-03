@@ -49,7 +49,7 @@ class RecyclerViewExampleFragment :
             onItemClick = { item: IBindingModel, pos: Int ->
                 println("onItemClick Position = $pos")
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
-                viewModel.onShowSelectedItemFragment(item)
+                viewModel.onShowSelectedBindingItemFragment(item)
             }
             onItemLongClickListener = { _, pos: Int ->
                 println("onItemLongClickListener Position = $pos")

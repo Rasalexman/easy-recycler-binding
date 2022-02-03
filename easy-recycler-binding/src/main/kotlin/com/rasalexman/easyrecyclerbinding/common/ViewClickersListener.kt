@@ -37,7 +37,7 @@ abstract class ViewClickersListener(
     }
 
     // true if the callback consumed the long click, false otherwise.
-    override fun onLongClick(view: View): Boolean {
+    override fun onLongClick(v: View): Boolean {
         onLongClicked()
         return consumeLongClick
     }

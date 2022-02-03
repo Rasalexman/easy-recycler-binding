@@ -3,12 +3,14 @@ package com.rasalexman.erb.ui.viewpagerexample
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.rasalexman.easyrecyclerbinding.DiffCallback
 import com.rasalexman.easyrecyclerbinding.createBindingWithViewModel
 import com.rasalexman.easyrecyclerbinding.createRecyclerConfig
 import com.rasalexman.easyrecyclerbinding.viewPagerConfig
 import com.rasalexman.erb.BR
 import com.rasalexman.erb.R
 import com.rasalexman.erb.databinding.*
+import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.RecyclerItemUI
 import com.rasalexman.erb.models.RecyclerItemUI2
 import com.rasalexman.erb.ui.base.BaseBindingFragment
@@ -19,6 +21,28 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
 
     private val pageTitles: Array<String> by lazy {
         requireContext().resources.getStringArray(R.array.vp_titles)
+    }
+
+    private val firstItemsDiffUtil: DiffCallback<IRecyclerItem> by lazy {
+        object : DiffCallback<IRecyclerItem>() {
+            override fun areContentsTheSame(
+                oldItem: IRecyclerItem,
+                newItem: IRecyclerItem
+            ): Boolean {
+                return oldItem.id == newItem.id && oldItem.isChecked.get() == newItem.isChecked.get()
+            }
+        }
+    }
+
+    private val secondItemsDiffUtil: DiffCallback<IRecyclerItem> by lazy {
+        object : DiffCallback<IRecyclerItem>() {
+            override fun areContentsTheSame(
+                oldItem: IRecyclerItem,
+                newItem: IRecyclerItem
+            ): Boolean {
+                return oldItem.id == newItem.id && oldItem.isChecked.get() == newItem.isChecked.get()
+            }
+        }
     }
 
     override fun initBinding(binding: VpExampleFragmentBinding) {
@@ -42,6 +66,11 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
                 rvConfig = createRecyclerConfig<RecyclerItemUI, ItemRecyclerBinding> {
                     layoutId = R.layout.item_recycler
                     itemId = BR.item
+                    diffUtilCallback = firstItemsDiffUtil
+
+                    onItemClick = { item, _ ->
+                        viewModel.onShowSelectedRecyclerItemFragment(item)
+                    }
                 }
             }
             else -> createBindingWithViewModel<ItemVpSecondPageBinding, ViewPagerExampleViewModel>(
@@ -53,6 +82,7 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
                 rvConfig = createRecyclerConfig<RecyclerItemUI2, ItemRecycler2Binding> {
                     layoutId = R.layout.item_recycler2
                     itemId = BR.item
+                    diffUtilCallback = secondItemsDiffUtil
                 }
             }
         }.root
