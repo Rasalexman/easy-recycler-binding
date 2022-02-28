@@ -76,6 +76,7 @@ internal class ScrollPositionObserver(
     private fun clearWhenViewDestroy() {
         scrollPositionWeakRef.clear()
         recyclerWeakRef.get()?.let { rv ->
+            rv.clearOnScrollListeners()
             adapterDataObserver?.let { dataObserver ->
                 rv.adapter?.unregisterAdapterDataObserver(dataObserver)
                 dataObserver.clear()

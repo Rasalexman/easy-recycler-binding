@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 
 class PagingViewModel : BasePagesViewModel(), IBindingModel {
 
@@ -61,5 +62,7 @@ class PagingViewModel : BasePagesViewModel(), IBindingModel {
         stateHeaderAdapter = createStateAdapter(LoadingHeaderItem()) {
             itemId = BR.item
         }
+
+        removeAndRecycleExistingViews = true
     }
 }

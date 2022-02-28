@@ -26,9 +26,6 @@ import com.rasalexman.easyrecyclerbinding.common.ScrollPositionObserver
 import java.util.*
 import kotlin.math.abs
 
-typealias ItemsConfig<I> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, ViewDataBinding>
-typealias ItemsBindingConfig<I, B> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, B>
-
 val changeCallbackMap = WeakHashMap<String, CustomVP2PageChangeListener>(3)
 
 @BindingAdapter(
@@ -116,51 +113,51 @@ fun getSelectedPosition(viewPager: ViewPager2): Int {
 fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     recyclerView: RecyclerView,
     newItems: List<ItemType>? = null,
-    dataBindingRecyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
+    recyclerViewConfig: DataBindingRecyclerViewConfig<BindingType>?,
     scrollPosition: ScrollPosition? = null,
     pagingData: PagingData<ItemType>? = null,
     visibleThreshold: Int = RecyclerView.NO_POSITION
 ) {
 
-    if (dataBindingRecyclerViewConfig == null) {
+    if (recyclerViewConfig == null) {
         return
     }
 
     val oldItems: MutableList<ItemType> =
-        recyclerView.getOrCreateOldItems(dataBindingRecyclerViewConfig)
+        recyclerView.getOrCreateOldItems(recyclerViewConfig)
 
     if (recyclerView.adapter == null) {
         val isStandardAdapter =
-            dataBindingRecyclerViewConfig.adapterType == BindingAdapterType.STANDARD
-        recyclerView.setHasFixedSize(dataBindingRecyclerViewConfig.hasFixedSize)
+            recyclerViewConfig.adapterType == BindingAdapterType.STANDARD
+        recyclerView.setHasFixedSize(recyclerViewConfig.hasFixedSize)
 
         var scrollListener: EndlessRecyclerOnScrollListener? = null
+        var currentScrollListener: RecyclerView.OnScrollListener? = null
         if (recyclerView.layoutManager == null) {
             val mLayoutManager: RecyclerView.LayoutManager =
-                dataBindingRecyclerViewConfig.layoutManager
+                recyclerViewConfig.layoutManager
                     ?: LinearLayoutManager(
                         recyclerView.context,
-                        dataBindingRecyclerViewConfig.orientation,
-                        dataBindingRecyclerViewConfig.isReverseLayout
+                        recyclerViewConfig.orientation,
+                        recyclerViewConfig.isReverseLayout
                     )
             recyclerView.layoutManager = mLayoutManager
 
             if (isStandardAdapter) {
                 // first clear all listeners
                 recyclerView.clearOnScrollListeners()
-                // custom listener
-                dataBindingRecyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
-                    scrollListener = object :
-                        EndlessRecyclerOnScrollListener(mLayoutManager, visibleThreshold) {
-                        override fun onLoadMore(currentPage: Int) {
-                            onLoadMoreHandler(currentPage)
+                // custom listener or check another scroll listener scroll listener
+                currentScrollListener = recyclerViewConfig.onScrollListener?.let { onLoadMoreHandler ->
+                        EndlessRecyclerOnScrollListener(
+                            mLayoutManager,
+                            visibleThreshold,
+                            onLoadMoreHandler
+                        ).also {
+                            scrollListener = it
                         }
-                    }.apply(recyclerView::addOnScrollListener)
-                } ?:
-                // or check another scroll listener scroll listener
-                dataBindingRecyclerViewConfig.recyclerOnScrollListener?.let {
-                    recyclerView.addOnScrollListener(it)
-                }
+                    } ?: recyclerViewConfig.recyclerOnScrollListener
+                // add scroll listener
+                currentScrollListener?.let(recyclerView::addOnScrollListener)
             }
         }
 
@@ -172,39 +169,49 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
             recyclerView.defaultFocusHighlightEnabled = false
         }
 
-        val adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
         // create adapter
-        recyclerView.swapAdapter(adapter, false)
-        // invoke onAdapterAdded callback
-        dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
-
-        // create scroll position observer and scroll listener recalculation
-        val lifecycleOwner = try {
-            dataBindingRecyclerViewConfig.lifecycleOwner
-                ?: recyclerView.findFragment<Fragment>().viewLifecycleOwner
-        } catch (e: Exception) {
-            //println("[ERROR]: error with recyclerView.findFragment = $e")
-            recyclerView.context.run {
-                findPrimaryFragment()?.viewLifecycleOwner ?: getOwner<LifecycleOwner>()
-            }
+        val adapter = recyclerViewConfig.createAdapter(oldItems)
+        // choose method to apply adapter to RV
+        if(recyclerViewConfig.isSwapAdapter) {
+            recyclerView.swapAdapter(adapter, recyclerViewConfig.removeAndRecycleExistingViews)
+        } else {
+            recyclerView.adapter = adapter
         }
 
-        lifecycleOwner?.apply {
-            lifecycle.addObserver(
-                ScrollPositionObserver(
-                    lifecycleOwner = lifecycleOwner,
-                    recyclerView = recyclerView,
-                    scrollPosition = scrollPosition,
-                    scrollListener = scrollListener
-                )
+        // invoke onAdapterAdded callback
+        recyclerViewConfig.onAdapterAdded?.invoke(adapter)
+        // add scroll position saver
+        val currentLifecycleOwner = recyclerViewConfig.lifecycleOwner
+        if(currentLifecycleOwner == null) {
+            recyclerView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(rv: View?) {
+                    if (rv is RecyclerView) {
+                        addLifecycleObserver(
+                            rv, currentLifecycleOwner,
+                            scrollPosition, scrollListener
+                        )
+                    }
+                }
+
+                override fun onViewDetachedFromWindow(rv: View?) {
+                    if (rv is RecyclerView) {
+                        currentScrollListener?.let(rv::removeOnScrollListener)
+                        rv.removeOnAttachStateChangeListener(this)
+                    }
+                }
+            })
+        } else {
+            addLifecycleObserver(
+                recyclerView, currentLifecycleOwner,
+                scrollPosition, scrollListener
             )
         }
 
-        dataBindingRecyclerViewConfig.itemAnimator?.let {
+        recyclerViewConfig.itemAnimator?.let {
             recyclerView.itemAnimator = it
         }
 
-        dataBindingRecyclerViewConfig.itemDecorator?.let { decorationList ->
+        recyclerViewConfig.itemDecorator?.let { decorationList ->
             repeat(recyclerView.itemDecorationCount) {
                 recyclerView.removeItemDecorationAt(it)
             }
@@ -218,8 +225,42 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         oldItems = oldItems,
         newItems = newItems,
         pagingData = pagingData,
-        rvConfig = dataBindingRecyclerViewConfig
+        rvConfig = recyclerViewConfig
     )
+}
+
+private fun addLifecycleObserver(
+    recyclerView: RecyclerView,
+    lcOwner: LifecycleOwner?,
+    scrollPosition: ScrollPosition?,
+    scrollListener: EndlessRecyclerOnScrollListener?
+) {
+// create scroll position observer and scroll listener recalculation
+    val lifecycleOwner = try {
+        if (lcOwner != null) {
+            lcOwner
+        } else {
+            val parentFragment = recyclerView.findFragment<Fragment>()
+            parentFragment.viewLifecycleOwner
+        }
+    } catch (e: Exception) {
+        //println("[ERROR]: error with recyclerView.findFragment = $e")
+        recyclerView.context.run {
+            val primaryFragment = findPrimaryFragment()
+            primaryFragment?.viewLifecycleOwner ?: getOwner<LifecycleOwner>()
+        }
+    }
+
+    lifecycleOwner?.apply {
+        lifecycle.addObserver(
+            ScrollPositionObserver(
+                lifecycleOwner = lifecycleOwner,
+                recyclerView = recyclerView,
+                scrollPosition = scrollPosition,
+                scrollListener = scrollListener
+            )
+        )
+    }
 }
 
 private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter<*>.applyAdapterData(
@@ -379,7 +420,6 @@ private fun <ItemType : Any> applyData(
     }
     adapter.notifyItemRangeChanged(0, notifySize)
 }
-
 
 
 fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.findPagingAdapter(): PagingDataAdapter<ItemType, BindingViewHolder>? {

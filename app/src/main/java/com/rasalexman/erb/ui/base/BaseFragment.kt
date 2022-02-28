@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavDirections
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.rasalexman.erb.R
 
 abstract class BaseFragment<VM : BaseViewModel> : Fragment() {
 
@@ -25,7 +27,11 @@ abstract class BaseFragment<VM : BaseViewModel> : Fragment() {
     protected open fun navigateToDirection(viewModel:BaseViewModel, direction: NavDirections?) {
         direction?.let {
             viewModel.clearNavigation()
-            this.findNavController().navigate(it)
+            try {
+                this.findNavController().navigate(it)
+            } catch (e: Exception) {
+                requireActivity().findNavController(R.id.nav_host_fragment).navigate(it)
+            }
         }
     }
 }

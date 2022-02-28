@@ -102,7 +102,10 @@ private fun <I : Any, BT : ViewDataBinding> Fragment.getFragmentRecyclerConfigBu
 fun Context.findPrimaryFragment(): Fragment? {
     return (this as? FragmentActivity)?.run {
         val frag = supportFragmentManager.fragments
-        frag.lastOrNull()?.childFragmentManager?.primaryNavigationFragment
+        val lastTag = frag.lastOrNull()
+        val childManager = lastTag?.childFragmentManager
+        val childPrimary = childManager?.primaryNavigationFragment
+        childPrimary
     }
 }
 

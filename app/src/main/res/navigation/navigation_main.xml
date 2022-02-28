@@ -32,6 +32,10 @@
             android:id="@+id/showHorizontalFragment"
             app:destination="@id/rvHorizontalFragment"/>
 
+        <action
+            android:id="@+id/showTabHostFragment"
+            app:destination="@id/tabHostFragment"/>
+
     </fragment>
 
     <fragment
@@ -74,6 +78,11 @@
             app:nullable="false"
             app:argType="string"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/tabHostFragment"
+        android:name="com.rasalexman.erb.ui.tabs.TabsHostFragment"
+        android:label="TabsHostFragment" />
 
     <action
         android:id="@+id/showSelectedFragment"

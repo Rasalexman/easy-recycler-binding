@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.rasalexman.easyrecyclerbinding
 
 import androidx.databinding.ViewDataBinding
@@ -5,6 +7,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.rasalexman.easyrecyclerbinding.adapters.DataBindingLoadStateAdapter
 import com.rasalexman.easyrecyclerbinding.common.BindingAdapterType
+
+typealias ItemsConfig<I> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, ViewDataBinding>
+typealias ItemsBindingConfig<I, B> = DataBindingRecyclerViewConfig.DataBindingRecyclerViewConfigBuilder<I, B>
 
 fun <I : ILoadStateModel> createStateAdapter(
     item: I,

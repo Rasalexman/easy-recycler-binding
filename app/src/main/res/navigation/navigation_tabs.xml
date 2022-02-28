@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_tabs.xml"
+    app:startDestination="@id/recyclerViewExampleFragment">
+
+    <fragment
+        android:id="@+id/recyclerViewExampleFragment"
+        android:name="com.rasalexman.erb.ui.recyclerexample.RecyclerViewExampleFragment"
+        android:label="RecyclerViewExampleFragment" />
+
+    <fragment
+        android:id="@+id/pagingViewPagerFragment"
+        android:name="com.rasalexman.erb.ui.paging.PagingViewPagerFragment"
+        android:label="PagingViewPagerFragment" />
+
+    <fragment
+        android:id="@+id/viewPager2ExampleFragment"
+        android:name="com.rasalexman.erb.ui.viewpager2example.ViewPager2ExampleFragment"
+        android:label="ViewPager2ExampleFragment" />
+</navigation>

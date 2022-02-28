@@ -8,6 +8,7 @@
     <string name="button_title_vp2">ViewPager2</string>
     <string name="button_title_vp2_paging">ViewPager2Paging</string>
     <string name="button_title_paging">Paging</string>
+    <string name="button_title_tabs">BottomTabs</string>
 
     <string name="button_title_sing_in">Sing in</string>
     <string name="button_title_sing_up">Sing up</string>
