@@ -71,6 +71,9 @@ class RecyclerViewExampleFragment :
             onAdapterAdded = {
                 println("-----> onAdapterAdded ${it::class.simpleName}")
             }
+
+            removeAndRecycleExistingViews = true
+            //isSwapAdapter = false
         }
     }
 }

@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
+open class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
 
     private var enabled = true
     private var previousTotal = 0
@@ -20,6 +20,7 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
 
     private var isOrientationHelperVertical: Boolean = false
     private var orientationHelper: OrientationHelper? = null
+    private var onScrollListener: ((Int) -> Unit)? = null
 
     var currentPage = 0
         private set
@@ -33,13 +34,15 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
         this.layoutManager = layoutManager
     }
 
-    constructor(visibleThreshold: Int) {
+    constructor(visibleThreshold: Int, listener: ((Int)->Unit)? = null) {
         this.visibleThreshold = visibleThreshold
+        this.onScrollListener = listener
     }
 
-    constructor(layoutManager: RecyclerView.LayoutManager, visibleThreshold: Int) {
+    constructor(layoutManager: RecyclerView.LayoutManager, visibleThreshold: Int, listener: ((Int)->Unit)? = null) {
         this.layoutManager = layoutManager
         this.visibleThreshold = visibleThreshold
+        this.onScrollListener = listener
     }
 
     private fun findFirstVisibleItemPosition(recyclerView: RecyclerView): Int {
@@ -146,8 +149,7 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
                 val botPad = (firstVisibleItem + visibleThreshold)
                 if (topPad <= botPad) {
                     currentPage++
-                    onLoadMore(currentPage)
-
+                    onScrollListener?.invoke(currentPage)
                     isLoading = true
                 }
             }
@@ -179,5 +181,5 @@ abstract class EndlessRecyclerOnScrollListener : RecyclerView.OnScrollListener {
         }
     }
 
-    abstract fun onLoadMore(currentPage: Int)
+    //abstract fun onLoadMore(currentPage: Int)
 }

@@ -27,4 +27,8 @@ class MainViewModel : BaseViewModel() {
     fun onHorizontalButtonClicked() {
         navigationState.value = MainFragmentDirections.showHorizontalFragment()
     }
+
+    fun onTabHostButtonClicked() {
+        navigationState.value = MainFragmentDirections.showTabHostFragment()
+    }
 }

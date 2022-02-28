@@ -34,15 +34,40 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val stateFooterAdapter: DataBindingLoadStateAdapter<ILoadStateModel>? = null,
     val stateHeaderAdapter: DataBindingLoadStateAdapter<ILoadStateModel>? = null,
     val onAdapterAdded: ((RecyclerView.Adapter<*>) -> Unit)? = null,
+    val removeAndRecycleExistingViews: Boolean = false,
+    val isSwapAdapter: Boolean = true
 ) {
 
     @Suppress("unchecked_cast")
     class DataBindingRecyclerViewConfigBuilder<I : Any, BT : ViewDataBinding> {
+        /**
+         * Recycler view item view holder layout id
+         */
         var layoutId: Int? = null
+
+        /**
+         * Data Binding data item id. Used in tag 'variable'
+         */
         var itemId: Int? = null
+
+        /**
+         * Item double click delay
+         */
         var doubleClickDelayTime: Long = 150L
+
+        /**
+         * Type of Rv Adapter [BindingAdapterType]
+         */
         var adapterType: BindingAdapterType = BindingAdapterType.STANDARD
+
+        /**
+         * Is need to consume long click on view holder
+         */
         var consumeLongClick: Boolean = true
+
+        /**
+         * Current lifecycle owner. if it does not set config try to find parent one
+         */
         var lifecycleOwner: LifecycleOwner? = null
         var onItemCreate: ((BT) -> Unit)? = null
         var onItemUnbind: ((BT) -> Unit)? = null
@@ -53,6 +78,10 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onModelBind: ((I, Int) -> Unit)? = null
         var onItemDoubleClicked: ((I, Int) -> Unit)? = null
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
+
+        /**
+         * Recycler layout manager. If it isn't set, the LinearLayout is installed
+         */
         var layoutManager: RecyclerView.LayoutManager? = null
         var onScrollListener: RecyclerView.OnScrollListener? = null
         var onPageSelectedListener: ((Int) -> Unit)? = null
@@ -69,6 +98,25 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
             null
         var stateHeaderAdapter: DataBindingLoadStateAdapter<ILoadStateModel>? =
             null
+
+        /**
+         * If set to true, RecyclerView will recycle all existing Views.
+         * If adapters have stable ids and/or you want to animate the disappearing views,
+         * you may prefer to set this to false.
+         */
+        var removeAndRecycleExistingViews: Boolean = false
+
+        /**
+         * Swaps the current adapter with the provided one by calls [RecyclerView.swapAdapter].
+         * It is similar to setAdapter(RecyclerView.Adapter) but assumes existing adapter
+         * and the new adapter uses the same RecyclerView.ViewHolder
+         * and does not clear the RecycledViewPool.
+         * Note that it still calls onAdapterChanged callbacks.
+         *
+         * If it set to 'false' config calls [RecyclerView.setAdapter]
+         * Default: true
+         */
+        var isSwapAdapter: Boolean = true
 
         private val isHasRealisationCallbacks: Boolean
             get() = onItemCreate != null || onItemBind != null
@@ -95,7 +143,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 lifecycleOwner = this.lifecycleOwner,
                 orientation = this.orientation,
                 doubleClickDelayTime = this.doubleClickDelayTime,
-                consumeLongClick =this. consumeLongClick,
+                consumeLongClick = this.consumeLongClick,
                 layoutManager = this.layoutManager,
                 onScrollListener = onLoadMore,
                 onPageSelectedListener = this.onPageSelectedListener,
@@ -116,7 +164,9 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 onItemClickListener = onItemClickHandler,
                 onItemDoubleClickListener = onItemDoubleClickHandler,
                 onItemLongClickListener = onItemLongClickHandler,
-                onAdapterAdded = this.onAdapterAdded
+                onAdapterAdded = this.onAdapterAdded,
+                removeAndRecycleExistingViews = this.removeAndRecycleExistingViews,
+                isSwapAdapter = this.isSwapAdapter
             )
         }
 
