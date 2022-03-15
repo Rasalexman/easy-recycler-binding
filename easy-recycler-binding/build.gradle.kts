@@ -24,11 +24,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        getByName("debug") {
+        debug {
             isMinifyEnabled = false
         }
-
-        getByName("release") {
+        release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
@@ -70,6 +69,12 @@ android {
 
     buildFeatures {
         dataBinding = true
+    }
+
+    kotlinOptions {
+        apiVersion = "1.6"
+        languageVersion = "1.6"
+        jvmTarget = "11"
     }
 }
 
