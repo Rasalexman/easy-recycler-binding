@@ -326,7 +326,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> View.getOrCreateOldI
     return oldItems ?: mutableListOf()
 }
 
-internal fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
+fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecyclerViewConfig<BindingType>.createAdapter(
     items: List<ItemType>
 ): RecyclerView.Adapter<*> {
     val erbAdapter = ErbAdapter(
