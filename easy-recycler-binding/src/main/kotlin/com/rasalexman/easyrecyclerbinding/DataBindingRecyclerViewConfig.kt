@@ -16,6 +16,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
     val doubleClickDelayTime: Long = 150L,
     val lifecycleOwner: LifecycleOwner? = null,
     val realisation: DataBindingAdapter<BindingType>? = null,
+    val onItemPosClickListener: OnRecyclerItemClickListener? = null,
     val onItemClickListener: OnRecyclerItemClickListener? = null,
     val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
     val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null,
@@ -74,7 +75,8 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var orientation: Int = RecyclerView.VERTICAL
         var onItemBind: ((BT, Int) -> Unit)? = null
         var onLoadMore: ((Int) -> Unit)? = null
-        var onItemClick: ((I, Int) -> Unit)? = null
+        var onItemPosClick: ((I, Int) -> Unit)? = null
+        var onItemClick: ((I) -> Unit)? = null
         var onModelBind: ((I, Int) -> Unit)? = null
         var onItemDoubleClicked: ((I, Int) -> Unit)? = null
         var onItemLongClickListener: ((I, Int) -> Unit)? = null
@@ -130,6 +132,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
             // current layoutId
             val currentLayoutId = layoutId ?: -1
 
+            val onItemPosClickHandler = createOnItemPosClickHandler()
             val onItemClickHandler = createOnItemClickHandler()
             val onItemDoubleClickHandler = createOnItemDoubleClickHandler()
             val onItemLongClickHandler = createOnItemLongClickHandler()
@@ -161,6 +164,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
                 stateHeaderAdapter = this.stateHeaderAdapter,
 
                 realisation = realisationHandlers,
+                onItemPosClickListener = onItemPosClickHandler,
                 onItemClickListener = onItemClickHandler,
                 onItemDoubleClickListener = onItemDoubleClickHandler,
                 onItemLongClickListener = onItemLongClickHandler,
@@ -197,13 +201,28 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
             }
         }
 
-        private fun createOnItemClickHandler(): OnRecyclerItemClickListener? {
-            return onItemClick?.let { currentClickCallback ->
+        private fun createOnItemPosClickHandler(): OnRecyclerItemClickListener? {
+            return onItemPosClick?.let { currentClickCallback ->
                 object : OnRecyclerItemClickListener {
+                    override fun <T : Any> onItemClicked(item: T?) = Unit
                     override fun <T : Any> onItemClicked(item: T?, position: Int) {
                         val selectedItem = item as? I
                         selectedItem?.let {
                             currentClickCallback.invoke(it, position)
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun createOnItemClickHandler(): OnRecyclerItemClickListener? {
+            return onItemClick?.let { currentClickCallback ->
+                object : OnRecyclerItemClickListener {
+                    override fun <T : Any> onItemClicked(item: T?, position: Int) = Unit
+                    override fun <T : Any> onItemClicked(item: T?) {
+                        val selectedItem = item as? I
+                        selectedItem?.let {
+                            currentClickCallback.invoke(it)
                         }
                     }
                 }

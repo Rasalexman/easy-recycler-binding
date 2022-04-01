@@ -23,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 
 class PagingViewModel : BasePagesViewModel(), IBindingModel {
 
@@ -52,7 +51,7 @@ class PagingViewModel : BasePagesViewModel(), IBindingModel {
         itemId = BR.item
         layoutId = R.layout.item_recycler
 
-        onItemClick = { item, _ ->
+        onItemPosClick = { item, _ ->
             onShowSelectedItemFragment(item)
         }
 

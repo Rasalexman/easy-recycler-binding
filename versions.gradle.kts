@@ -1,5 +1,5 @@
 //------ APP VERSION
-extra["appVersion"] = "1.2.6"
+extra["appVersion"] = "1.2.7"
 
 //------ CONFIG DATA
 extra["minSdkVersion"] = 18
@@ -17,13 +17,13 @@ extra["resPath"] = "src/main/res"
 val navigation = "2.5.0-alpha03" //"2.4.1"//
 val leakcanary = "2.8.1"
 val coroutines = "1.6.0"
-val core: String = "1.7.0"
+val core: String = "1.8.0-alpha06"
 val constraintLayout = "2.1.3"
-val material = "1.6.0-alpha03"
+val material = "1.6.0-beta01"
 val viewPager2 = "1.1.0-beta01"
 val recyclerView = "1.3.0-alpha01"
-val lifecycle = "2.5.0-alpha04"
-val fragment: String = "1.5.0-alpha03"
+val lifecycle = "2.5.0-alpha05"
+val fragment: String = "1.5.0-alpha04"
 val paging: String = "3.1.0"
 extra["navigation"] = navigation
 

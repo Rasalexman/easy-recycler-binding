@@ -338,6 +338,7 @@ internal fun <ItemType : Any, BindingType : ViewDataBinding> DataBindingRecycler
         consumeLongClick = this.consumeLongClick,
         isLifecyclePending = this.isLifecyclePending,
         realisation = this.realisation,
+        onItemPosClickListener = this.onItemPosClickListener,
         onItemClickListener = this.onItemClickListener,
         onItemDoubleClickListener = this.onItemDoubleClickListener,
         onItemLongClickListener = this.onItemLongClickListener
@@ -432,6 +433,7 @@ fun RecyclerView.findPagingMultiAdapter(): PagingDataAdapter<IBindingModel, Bind
 
 interface OnRecyclerItemClickListener {
     fun <T : Any> onItemClicked(item: T?, position: Int)
+    fun <T : Any> onItemClicked(item: T?)
 }
 
 interface OnRecyclerItemDoubleClickListener {

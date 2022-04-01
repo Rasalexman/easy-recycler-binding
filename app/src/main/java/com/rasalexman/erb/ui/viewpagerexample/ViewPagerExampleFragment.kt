@@ -68,7 +68,7 @@ class ViewPagerExampleFragment : BaseBindingFragment<VpExampleFragmentBinding, V
                     itemId = BR.item
                     diffUtilCallback = firstItemsDiffUtil
 
-                    onItemClick = { item, _ ->
+                    onItemPosClick = { item, _ ->
                         viewModel.onShowSelectedRecyclerItemFragment(item)
                     }
                 }

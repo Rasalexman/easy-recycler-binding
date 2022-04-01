@@ -46,7 +46,7 @@ class RecyclerViewExampleFragment :
         binding.rvConfig = createRecyclerMultiConfig {
             itemId = BR.item
 
-            onItemClick = { item: IBindingModel, pos: Int ->
+            onItemPosClick = { item: IBindingModel, pos: Int ->
                 println("onItemClick Position = $pos")
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
                 viewModel.onShowSelectedBindingItemFragment(item)

@@ -81,7 +81,7 @@ class SecondPageViewModel : BaseItemsViewModel(), IBindingModel {
         layoutId = R.layout.item_simple_recycler
         diffUtilCallback = diffCallback
 
-        onItemClick = { item, _ ->
+        onItemPosClick = { item, _ ->
             onShowSelectedBindingItemFragment(item)
         }
 

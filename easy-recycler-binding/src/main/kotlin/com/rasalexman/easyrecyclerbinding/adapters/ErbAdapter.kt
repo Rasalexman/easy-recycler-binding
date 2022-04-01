@@ -24,6 +24,7 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     private val isLifecyclePending: Boolean = true,
     private val lifecycleOwner: LifecycleOwner? = null,
     private val realisation: DataBindingAdapter<BindingType>? = null,
+    private val onItemPosClickListener: OnRecyclerItemClickListener? = null,
     private val onItemClickListener: OnRecyclerItemClickListener? = null,
     private val onItemLongClickListener: OnRecyclerItemLongClickListener? = null,
     private val onItemDoubleClickListener: OnRecyclerItemDoubleClickListener? = null
@@ -32,9 +33,10 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
     var onGetItemHandler: ((Int) -> ItemType?)? = null
     var onGetItemsCountHandler: (() -> Int)? = null
 
-    private val hasClicksListeners: Boolean = onItemClickListener != null
-                || onItemLongClickListener != null
-                || onItemDoubleClickListener != null
+    private val hasClicksListeners: Boolean = onItemPosClickListener != null
+            || onItemClickListener != null
+            || onItemLongClickListener != null
+            || onItemDoubleClickListener != null
 
     private var parentFragmentLifecycleOwner: WeakReference<LifecycleOwner>? = null
     private var layoutInflater: WeakReference<LayoutInflater>? = null
@@ -103,7 +105,7 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         if (hasClicksListeners) {
             val clickListener = setupHolderClickListeners(holder)
             binding.root.apply {
-                if (onItemClickListener != null || onItemDoubleClickListener != null) {
+                if (hasClickListeners()) {
                     setOnClickListener(clickListener)
                 }
                 onItemLongClickListener?.let {
@@ -115,6 +117,10 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
         return holder
     }
 
+    private fun hasClickListeners(): Boolean {
+        return onItemPosClickListener != null || onItemClickListener != null || onItemDoubleClickListener != null
+    }
+
     private fun setupHolderClickListeners(holder: BindingViewHolder): ViewClickersListener {
         return object : ViewClickersListener(
             hasDoubleClickListener = onItemDoubleClickListener != null,
@@ -124,9 +130,12 @@ class ErbAdapter<ItemType : Any, BindingType : ViewDataBinding>(
             private var currentHolder: BindingViewHolder = holder
 
             override fun onSingleClicked() {
-                onItemClickListener?.let {
+                onItemPosClickListener?.let {
                     val (position, item) = getItemAndPosition()
                     it.onItemClicked(item, position)
+                }
+                onItemClickListener?.let {
+                    it.onItemClicked(getItemAndPosition().second)
                 }
             }
 

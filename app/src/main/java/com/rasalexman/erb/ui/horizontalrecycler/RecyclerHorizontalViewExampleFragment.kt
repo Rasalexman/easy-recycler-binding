@@ -22,7 +22,7 @@ class RecyclerHorizontalViewExampleFragment :
             layoutId = R.layout.item_top
             orientation = LinearLayout.HORIZONTAL
 
-            onItemClick = { item: TopItemUI, pos: Int ->
+            onItemPosClick = { item: TopItemUI, pos: Int ->
                 println("onItemClick Position = $pos")
                 Toast.makeText(context, "onItemClick", Toast.LENGTH_SHORT).show()
                 viewModel.onShowSelectedItemFragment(item)

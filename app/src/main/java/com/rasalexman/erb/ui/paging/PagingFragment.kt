@@ -22,7 +22,7 @@ class PagingFragment : BaseBindingFragment<RvPagingFragmentBinding, PagingViewMo
         binding.rvConfig = createPagingRecyclerMultiConfig {
             itemId = BR.item
 
-            onItemClick = { item, _ ->
+            onItemPosClick = { item, _ ->
                 viewModel.onShowSelectedItemFragment(item)
             }
 
