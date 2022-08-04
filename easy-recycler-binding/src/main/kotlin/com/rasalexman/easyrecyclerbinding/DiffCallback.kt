@@ -33,14 +33,15 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
 
                 lastDiffUtil = processCalculationAsync()
                 lastDiffUtil?.let {
-                    itemsAdapter.setAdapterItems(localNewItems)
-                    it.dispatchUpdatesTo(adapter)
+                    if(this.isActive) {
+                        itemsAdapter.setAdapterItems(localNewItems)
+                        it.dispatchUpdatesTo(adapter)
+                    }
                 }
                 //val finishTime = System.currentTimeMillis() - startTime
                 //println("-----> finish processing in ${finishTime}ms")
             }
         }
-
     }
 
     override fun clearLastJob() {
@@ -50,7 +51,7 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
         supervisorJob.cancelChildren()
     }
 
-    protected open suspend fun processCalculationAsync() = withContext(Dispatchers.Default) {
+    protected open suspend fun processCalculationAsync() = runInterruptible(Dispatchers.Default) {
         DiffUtil.calculateDiff(this@DiffCallback)
     }
 

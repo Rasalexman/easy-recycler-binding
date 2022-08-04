@@ -90,7 +90,7 @@ data class DataBindingRecyclerViewConfig<BindingType : ViewDataBinding>(
         var onPageScrollStateListener: ((Int) -> Unit)? = null
         var itemAnimator: RecyclerView.ItemAnimator? = null
         var itemDecorator: List<RecyclerView.ItemDecoration>? = null
-        var diffUtilCallback: DiffCallback<*>? = null
+        var diffUtilCallback: DiffCallback<*>? = DiffCallback<I>()
         var diffItemUtilCallback: DiffItemsCallback<I>? = null
         var hasFixedSize: Boolean = true
         var isLifecyclePending: Boolean = true
