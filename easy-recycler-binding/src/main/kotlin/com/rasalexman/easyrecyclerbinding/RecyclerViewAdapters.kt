@@ -44,42 +44,47 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupViewPager2(
     val oldItems: MutableList<ItemType> =
         viewPager.getOrCreateOldItems(dataBindingRecyclerViewConfig)
 
-    if (viewPager.adapter == null) {
+    val currentAdapter = viewPager.adapter
+    val adapter = if (currentAdapter == null) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             viewPager.defaultFocusHighlightEnabled = false
         }
         // create adapter for vp
-        val adapter = dataBindingRecyclerViewConfig.createAdapter(oldItems)
-        // set current adapter
-        viewPager.adapter = adapter
-        // invoke onAdapterAdded callback
-        dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(adapter)
+        dataBindingRecyclerViewConfig.createAdapter(oldItems).also {
+            // set current adapter
+            viewPager.adapter = it
+            // invoke onAdapterAdded callback
+            dataBindingRecyclerViewConfig.onAdapterAdded?.invoke(it)
 
-
-        val callbackKey = viewPager.hashCode().toString()
-        val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
-            CustomVP2PageChangeListener().apply {
-                onPageScrolledCallback = dataBindingRecyclerViewConfig.onScrollListener
-                onPageScrollStateCallback = dataBindingRecyclerViewConfig.onPageScrollStateListener
-                onPageSelectedCallback = dataBindingRecyclerViewConfig.onPageSelectedListener
+            val callbackKey = viewPager.hashCode().toString()
+            val lastCallback = changeCallbackMap.getOrPut(callbackKey) {
+                CustomVP2PageChangeListener().apply {
+                    onPageScrolledCallback = dataBindingRecyclerViewConfig.onScrollListener
+                    onPageScrollStateCallback = dataBindingRecyclerViewConfig.onPageScrollStateListener
+                    onPageSelectedCallback = dataBindingRecyclerViewConfig.onPageSelectedListener
+                }
             }
+            viewPager.registerOnPageChangeCallback(lastCallback)
+            viewPager.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(p0: View) = Unit
+                override fun onViewDetachedFromWindow(p0: View) {
+                    viewPager.unregisterOnPageChangeCallback(lastCallback)
+                    changeCallbackMap.remove(callbackKey)?.clear()
+                    viewPager.removeOnAttachStateChangeListener(this)
+                }
+            })
         }
-        viewPager.registerOnPageChangeCallback(lastCallback)
-        viewPager.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(p0: View?) = Unit
-            override fun onViewDetachedFromWindow(p0: View?) {
-                viewPager.unregisterOnPageChangeCallback(lastCallback)
-                changeCallbackMap.remove(callbackKey)?.clear()
-                viewPager.removeOnAttachStateChangeListener(this)
-            }
-        })
+    } else {
+        currentAdapter
     }
 
-    viewPager.adapter?.applyAdapterData(
+    adapter.applyAdapterData(
         oldItems = oldItems,
         newItems = newItems,
-        rvConfig = dataBindingRecyclerViewConfig
+        rvConfig = dataBindingRecyclerViewConfig,
+        isViewPager = true
     )
+
 }
 
 @BindingAdapter(value = ["selectedPage", "positionAttrChanged"], requireAll = false)
@@ -126,7 +131,8 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
     val oldItems: MutableList<ItemType> =
         recyclerView.getOrCreateOldItems(recyclerViewConfig)
 
-    if (recyclerView.adapter == null) {
+    val currentAdapter = recyclerView.adapter
+    val adapter = if (currentAdapter == null) {
         val isStandardAdapter =
             recyclerViewConfig.adapterType == BindingAdapterType.STANDARD
         recyclerView.setHasFixedSize(recyclerViewConfig.hasFixedSize)
@@ -170,58 +176,61 @@ fun <ItemType : Any, BindingType : ViewDataBinding> setupRecyclerView(
         }
 
         // create adapter
-        val adapter = recyclerViewConfig.createAdapter(oldItems)
-        // choose method to apply adapter to RV
-        if(recyclerViewConfig.isSwapAdapter) {
-            recyclerView.swapAdapter(adapter, recyclerViewConfig.removeAndRecycleExistingViews)
-        } else {
-            recyclerView.adapter = adapter
-        }
-
-        // invoke onAdapterAdded callback
-        recyclerViewConfig.onAdapterAdded?.invoke(adapter)
-        // add scroll position saver
-        val currentLifecycleOwner = recyclerViewConfig.lifecycleOwner
-        if(currentLifecycleOwner == null) {
-            recyclerView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(rv: View?) {
-                    if (rv is RecyclerView) {
-                        addLifecycleObserver(
-                            rv, currentLifecycleOwner,
-                            scrollPosition, scrollListener
-                        )
-                    }
-                }
-
-                override fun onViewDetachedFromWindow(rv: View?) {
-                    if (rv is RecyclerView) {
-                        currentScrollListener?.let(rv::removeOnScrollListener)
-                        rv.removeOnAttachStateChangeListener(this)
-                    }
-                }
-            })
-        } else {
-            addLifecycleObserver(
-                recyclerView, currentLifecycleOwner,
-                scrollPosition, scrollListener
-            )
-        }
-
-        recyclerViewConfig.itemAnimator?.let {
-            recyclerView.itemAnimator = it
-        }
-
-        recyclerViewConfig.itemDecorator?.let { decorationList ->
-            repeat(recyclerView.itemDecorationCount) {
-                recyclerView.removeItemDecorationAt(it)
+        recyclerViewConfig.createAdapter(oldItems).also { adapter ->
+            // choose method to apply adapter to RV
+            if(recyclerViewConfig.isSwapAdapter) {
+                recyclerView.swapAdapter(adapter, recyclerViewConfig.removeAndRecycleExistingViews)
+            } else {
+                recyclerView.adapter = adapter
             }
-            decorationList.forEach {
-                recyclerView.addItemDecoration(it)
+
+            // invoke onAdapterAdded callback
+            recyclerViewConfig.onAdapterAdded?.invoke(adapter)
+            // add scroll position saver
+            val currentLifecycleOwner = recyclerViewConfig.lifecycleOwner
+            if(currentLifecycleOwner == null) {
+                recyclerView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(rv: View) {
+                        if (rv is RecyclerView) {
+                            addLifecycleObserver(
+                                rv, currentLifecycleOwner,
+                                scrollPosition, scrollListener
+                            )
+                        }
+                    }
+
+                    override fun onViewDetachedFromWindow(rv: View) {
+                        if (rv is RecyclerView) {
+                            currentScrollListener?.let(rv::removeOnScrollListener)
+                            rv.removeOnAttachStateChangeListener(this)
+                        }
+                    }
+                })
+            } else {
+                addLifecycleObserver(
+                    recyclerView, currentLifecycleOwner,
+                    scrollPosition, scrollListener
+                )
+            }
+
+            recyclerViewConfig.itemAnimator?.let {
+                recyclerView.itemAnimator = it
+            }
+
+            recyclerViewConfig.itemDecorator?.let { decorationList ->
+                repeat(recyclerView.itemDecorationCount) {
+                    recyclerView.removeItemDecorationAt(it)
+                }
+                decorationList.forEach {
+                    recyclerView.addItemDecoration(it)
+                }
             }
         }
+    } else {
+        currentAdapter
     }
 
-    recyclerView.adapter?.applyAdapterData(
+    adapter.applyAdapterData(
         oldItems = oldItems,
         newItems = newItems,
         pagingData = pagingData,
@@ -267,7 +276,8 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter
     oldItems: MutableList<ItemType>,
     newItems: List<ItemType>?,
     pagingData: PagingData<ItemType>? = null,
-    rvConfig: DataBindingRecyclerViewConfig<BindingType>
+    rvConfig: DataBindingRecyclerViewConfig<BindingType>,
+    isViewPager: Boolean = false
 ) {
     if (rvConfig.adapterType == BindingAdapterType.PAGING) {
         if (pagingData != null) {
@@ -277,7 +287,7 @@ private fun <ItemType : Any, BindingType : ViewDataBinding> RecyclerView.Adapter
                 diffItemsCallback?.setPageData(pagingData, currentPagingAdapter)
             }
         }
-    } else if (rvConfig.diffUtilCallback != null) {
+    } else if (rvConfig.diffUtilCallback != null && !isViewPager) {
         val diffCallback = rvConfig.diffUtilCallback as? DiffCallback<Any>
         diffCallback?.setData(newItems, this)
     } else {

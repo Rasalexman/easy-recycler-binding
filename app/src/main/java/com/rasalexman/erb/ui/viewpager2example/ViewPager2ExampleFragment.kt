@@ -57,11 +57,11 @@ class ViewPager2ExampleFragment :
             }
         })
         item.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
                 secondPageViewModel.searchState.postValue(SearchState.OPEN)
                 return true
             }
-            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
                 secondPageViewModel.onQueryTextChanged("")
                 secondPageViewModel.searchState.postValue(SearchState.CLOSED)
                 return true
@@ -106,7 +106,6 @@ class ViewPager2ExampleFragment :
     override fun setupViewPagerConfig(binding: Vp2ExampleFragmentBinding) {
         binding.vpConfig = createRecyclerMultiConfig {
             itemId = BR.vm
-
             onPageSelectedListener = {
                 viewModel.onPageSelected(it)
             }

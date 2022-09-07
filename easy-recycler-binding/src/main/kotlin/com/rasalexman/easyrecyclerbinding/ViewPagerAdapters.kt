@@ -55,8 +55,8 @@ fun setupViewPager(
         }
         viewPager.addOnPageChangeListener(pageChangeListener)
         viewPager.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(p0: View?) = Unit
-            override fun onViewDetachedFromWindow(p0: View?) {
+            override fun onViewAttachedToWindow(p0: View) = Unit
+            override fun onViewDetachedFromWindow(p0: View) {
                 pageChangeListener.clear()
                 viewPager.removeOnPageChangeListener(pageChangeListener)
                 viewPager.removeOnAttachStateChangeListener(this)
