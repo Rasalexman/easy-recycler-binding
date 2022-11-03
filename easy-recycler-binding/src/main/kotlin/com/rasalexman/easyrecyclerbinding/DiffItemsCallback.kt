@@ -38,7 +38,7 @@ open class DiffItemsCallback<ItemType : Any>(
     }
 
     override fun clearLastJob() {
-        supervisorJob.cancelChildren()
+        coroutineContext.cancelChildren()
     }
 
     override fun clear() {

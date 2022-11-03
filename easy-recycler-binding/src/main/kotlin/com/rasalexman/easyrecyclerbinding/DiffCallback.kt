@@ -48,7 +48,7 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
         lastDiffUtil = null
         lastJob?.cancel()
         lastJob = null
-        supervisorJob.cancelChildren()
+        coroutineContext.cancelChildren()
     }
 
     protected open suspend fun processCalculationAsync() = runInterruptible(Dispatchers.Default) {
@@ -61,9 +61,9 @@ open class DiffCallback<ItemType : Any> : DiffUtil.Callback(), ISetData<ItemType
         return if (oldItem != null && newItem != null) {
             areContentsTheSame(oldItem, newItem)
         } else if (oldItem == null && newItem == null) {
-            return true
+            true
         } else {
-            throw AssertionError()
+            false
         }
     }
 

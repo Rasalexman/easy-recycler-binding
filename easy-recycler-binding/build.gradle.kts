@@ -13,6 +13,8 @@ android {
     val buildSdkVersion: Int by extra
     val minSdkVersion: Int by extra
     val appVersion: String by extra
+    val kotlinApiVersion: String by extra
+    val jvmVersion: String by extra
 
     compileSdk = buildSdkVersion
 
@@ -72,9 +74,9 @@ android {
     }
 
     kotlinOptions {
-        apiVersion = "1.7"
-        languageVersion = "1.7"
-        jvmTarget = "11"
+        apiVersion = kotlinApiVersion
+        languageVersion = kotlinApiVersion
+        jvmTarget = jvmVersion
     }
 }
 

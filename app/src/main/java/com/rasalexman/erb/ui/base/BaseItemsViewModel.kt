@@ -10,6 +10,7 @@ import com.rasalexman.erb.models.RecyclerItemUI
 import com.rasalexman.erb.models.RecyclerItemUI2
 import com.rasalexman.erb.ui.main.MainFragmentDirections
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -24,6 +25,9 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
             "Items count: ${it.size}"
         }
     }
+
+    private var removeJob: Job? = null
+    private var addJob: Job? = null
 
     init {
         createItems()
@@ -52,7 +56,8 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
 
     fun addItems(minItems: Int = 14, maxItems: Int = 100, atFirst: Boolean = true) {
         showLoading()
-        viewModelScope.launch {
+        addJob?.cancel()
+        addJob = viewModelScope.launch {
             val itemsList = mutableListOf<IRecyclerItem>()
             withContext(Dispatchers.IO) {
                 val itemCounts = Random.nextInt(minItems, maxItems)
@@ -70,16 +75,19 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
 
     fun onRemoveClicked(atFirst: Boolean = true) {
         showLoading()
-        viewModelScope.launch {
-            val lastList = items.value.orEmpty().toMutableList()
-            if(lastList.isNotEmpty()) {
-                val maxItems = lastList.size
-                val itemCounts = if(maxItems == 1) maxItems else Random.nextInt(1, maxItems)
-                val subList = if(atFirst) lastList.take(itemCounts) else lastList.takeLast(itemCounts)
-                lastList.removeAll(subList)
-                println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
+        removeJob?.cancel()
+        removeJob = viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val lastList = items.value.orEmpty().toMutableList()
+                if(lastList.isNotEmpty()) {
+                    val maxItems = lastList.size
+                    val itemCounts = if(maxItems == 1) maxItems else Random.nextInt(1, maxItems)
+                    val subList = if(atFirst) lastList.take(itemCounts) else lastList.takeLast(itemCounts)
+                    lastList.removeAll(subList)
+                    println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
+                }
+                postItems(lastList)
             }
-            postItems(lastList)
         }
     }
 

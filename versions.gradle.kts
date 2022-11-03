@@ -1,28 +1,28 @@
 //------ APP VERSION
-extra["appVersion"] = "1.3.1"
+extra["appVersion"] = "1.3.2"
 
 //------ CONFIG DATA
 extra["minSdkVersion"] = 18
 extra["buildSdkVersion"] = 33
-extra["apiVersion"] = "1.7"
+extra["kotlinApiVersion"] = "1.7"
 extra["jvmVersion"] = "11"
-extra["agpVersion"] = "7.2.2"
-extra["kotlinVersion"] = "1.7.10"
+extra["agpVersion"] = "7.3.0"
+extra["kotlinVersion"] = "1.7.20"
 extra["jitpackPath"] = "https://jitpack.io"
 extra["codePath"] = "src/main/kotlin"
 extra["resPath"] = "src/main/res"
 
 //------- LIBS VERSIONS
-val navigation = "2.5.1"
+val navigation = "2.5.3"
 val leakcanary = "2.9.1"
-val coroutines = "1.6.2"
-val core: String = "1.8.0"
+val coroutines = "1.6.4"
+val core: String = "1.9.0"
 val constraintLayout = "2.1.4"
-val material = "1.7.0-rc01"
+val material = "1.7.0"
 val viewPager2 = "1.1.0-beta01"
-val recyclerView = "1.3.0-beta02"
+val recyclerView = "1.3.0-rc01"
 val lifecycle = "2.5.1"
-val fragment: String = "1.5.2"
+val fragment: String = "1.5.4"
 val paging: String = "3.1.1"
 extra["navigation"] = navigation
 
