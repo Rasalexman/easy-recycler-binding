@@ -29,6 +29,7 @@ class RecyclerViewExampleFragment :
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val rand = Random.nextInt(100)
         val isfirst = rand % 2 == 0
@@ -45,6 +46,7 @@ class RecyclerViewExampleFragment :
         super.initBinding(binding)
         binding.rvConfig = createRecyclerMultiConfig {
             itemId = BR.item
+            //diffUtilCallback = null
 
             onItemPosClick = { item: IBindingModel, pos: Int ->
                 println("onItemClick Position = $pos")

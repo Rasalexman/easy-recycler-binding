@@ -1,20 +1,20 @@
 //------ APP VERSION
-extra["appVersion"] = "1.3.2"
+extra["appVersion"] = "1.3.3"
 
 //------ CONFIG DATA
 extra["minSdkVersion"] = 18
 extra["buildSdkVersion"] = 33
-extra["kotlinApiVersion"] = "1.7"
+extra["kotlinApiVersion"] = "1.8"
 extra["jvmVersion"] = "11"
-extra["agpVersion"] = "7.3.0"
-extra["kotlinVersion"] = "1.7.20"
+extra["agpVersion"] = "7.4.0"
+extra["kotlinVersion"] = "1.8.0"
 extra["jitpackPath"] = "https://jitpack.io"
 extra["codePath"] = "src/main/kotlin"
 extra["resPath"] = "src/main/res"
 
 //------- LIBS VERSIONS
 val navigation = "2.5.3"
-val leakcanary = "2.9.1"
+val leakcanary = "2.10"
 val coroutines = "1.6.4"
 val core: String = "1.9.0"
 val constraintLayout = "2.1.4"

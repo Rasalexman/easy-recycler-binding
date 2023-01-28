@@ -9,10 +9,7 @@ import com.rasalexman.erb.models.IRecyclerItem
 import com.rasalexman.erb.models.RecyclerItemUI
 import com.rasalexman.erb.models.RecyclerItemUI2
 import com.rasalexman.erb.ui.main.MainFragmentDirections
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.*
 import kotlin.random.Random
 
@@ -54,40 +51,38 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
         }
     }
 
-    fun addItems(minItems: Int = 14, maxItems: Int = 100, atFirst: Boolean = true) {
+    fun addItems(minItems: Int = 1400, maxItems: Int = 10000, atFirst: Boolean = true) {
         showLoading()
         addJob?.cancel()
-        addJob = viewModelScope.launch {
+        addJob = viewModelScope.launch(Dispatchers.Default) {
             val itemsList = mutableListOf<IRecyclerItem>()
-            withContext(Dispatchers.IO) {
-                val itemCounts = Random.nextInt(minItems, maxItems)
-                repeat(itemCounts) {
-                    itemsList.add(itemsCreator(it))
-                }
-                val lastList = items.value.orEmpty().toMutableList()
-                if(atFirst) lastList.addAll(0, itemsList)
-                else lastList.addAll(itemsList)
-                println("------> [added] at first = $atFirst | size = ${lastList.size}")
-                postItems(lastList)
+            val itemCounts = Random.nextInt(minItems, maxItems)
+            repeat(itemCounts) {
+                itemsList.add(itemsCreator(it))
             }
+            val lastList = items.value.orEmpty().toMutableList()
+            if (atFirst) lastList.addAll(0, itemsList)
+            else lastList.addAll(itemsList)
+            println("------> [added] at first = $atFirst | size = ${lastList.size}")
+            postItems(lastList)
+
         }
     }
 
     fun onRemoveClicked(atFirst: Boolean = true) {
         showLoading()
         removeJob?.cancel()
-        removeJob = viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val lastList = items.value.orEmpty().toMutableList()
-                if(lastList.isNotEmpty()) {
-                    val maxItems = lastList.size
-                    val itemCounts = if(maxItems == 1) maxItems else Random.nextInt(1, maxItems)
-                    val subList = if(atFirst) lastList.take(itemCounts) else lastList.takeLast(itemCounts)
-                    lastList.removeAll(subList)
-                    println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
-                }
-                postItems(lastList)
+        removeJob = viewModelScope.launch(Dispatchers.Default) {
+            val lastList = items.value.orEmpty().toMutableList()
+            if (lastList.isNotEmpty()) {
+                val maxItems = lastList.size
+                val itemCounts = if (maxItems == 1) maxItems else Random.nextInt(1, maxItems)
+                val subList =
+                    if (atFirst) lastList.take(itemCounts) else lastList.takeLast(itemCounts)
+                lastList.removeAll(subList)
+                println("----> [remove] at first = $atFirst | count = $itemCounts | allCount = ${lastList.size}")
             }
+            postItems(lastList)
         }
     }
 
@@ -96,8 +91,8 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
     }
 
     protected open fun postItems(freshItems: List<IRecyclerItem>) {
-        items.postValue(freshItems)
         hideLoading()
+        items.postValue(freshItems)
     }
 
     protected open suspend fun itemsCreator(position: Int): IRecyclerItem {
@@ -122,6 +117,7 @@ abstract class BaseItemsViewModel : BasePagesViewModel() {
     }
 
     fun onShowSelectedRecyclerItemFragment(item: IRecyclerItem) {
-        navigationState.value = MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
+        navigationState.value =
+            MainFragmentDirections.showSelectedFragment(selectedItem = item.title)
     }
 }

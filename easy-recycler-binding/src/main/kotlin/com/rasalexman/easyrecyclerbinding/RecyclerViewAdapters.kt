@@ -24,7 +24,6 @@ import com.rasalexman.easyrecyclerbinding.common.CustomVP2PageChangeListener
 import com.rasalexman.easyrecyclerbinding.common.EndlessRecyclerOnScrollListener
 import com.rasalexman.easyrecyclerbinding.common.ScrollPositionObserver
 import java.util.*
-import kotlin.math.abs
 
 val changeCallbackMap = WeakHashMap<String, CustomVP2PageChangeListener>(3)
 
@@ -390,46 +389,56 @@ private fun <ItemType : Any> applyData(
     oldItems: MutableList<ItemType>?,
     newItems: List<ItemType>?
 ) {
-    var notifySize = 0
+//    var notifySize = 0
+//    if (oldItems !== newItems) {
+//        if (oldItems == null) return
+//
+//        val oldSz = oldItems.size
+//        val firstItem = if (oldSz > 0) oldItems.first() else null
+//        oldItems.clear()
+//        newItems?.let { new ->
+//            val indFirst = firstItem?.let { new.indexOf(it) } ?: 0
+//            val newSz = new.size
+//            val diff = newSz - oldSz
+//            oldItems.addAll(new)
+//
+//            when {
+//                diff > 0 -> {
+//                    // adding
+//                    val adSz = if (indFirst > 0) 0 else oldSz
+//                    adapter.notifyItemRangeInserted(adSz, diff)
+//                }
+//                diff < 0 -> {
+//                    val absDiff = abs(diff)
+//                    // deleting
+//                    var remSz = if (indFirst < 0) 0 else (oldSz - absDiff)
+//                    remSz = if (remSz < 0) 0 else remSz
+//                    adapter.notifyItemRangeRemoved(remSz, absDiff)
+//                }
+//                else -> Unit
+//            }
+//            notifySize = newSz
+//        }
+//    } else {
+//        notifySize = oldItems?.let { old ->
+//            old.clear()
+//            newItems?.let {
+//                old.addAll(it)
+//            }
+//            old.size
+//        } ?: 0
+//    }
+//    adapter.notifyItemRangeChanged(0, notifySize)
+
     if (oldItems !== newItems) {
-        if (oldItems == null) return
-
-        val oldSz = oldItems.size
-        val firstItem = if (oldSz > 0) oldItems.first() else null
-        oldItems.clear()
-        newItems?.let { new ->
-            val indFirst = firstItem?.let { new.indexOf(it) } ?: 0
-            val newSz = new.size
-            val diff = newSz - oldSz
-            oldItems.addAll(new)
-
-            when {
-                diff > 0 -> {
-                    // adding
-                    val adSz = if (indFirst > 0) 0 else oldSz
-                    adapter.notifyItemRangeInserted(adSz, diff)
-                }
-                diff < 0 -> {
-                    val absDiff = abs(diff)
-                    // deleting
-                    var remSz = if (indFirst < 0) 0 else (oldSz - absDiff)
-                    remSz = if (remSz < 0) 0 else remSz
-                    adapter.notifyItemRangeRemoved(remSz, absDiff)
-                }
-                else -> Unit
-            }
-            notifySize = newSz
-        }
-    } else {
-        notifySize = oldItems?.let { old ->
+        oldItems?.let { old ->
             old.clear()
             newItems?.let {
-                old.addAll(it)
+                old.addAll(newItems)
             }
-            old.size
-        } ?: 0
+        }
     }
-    adapter.notifyItemRangeChanged(0, notifySize)
+    adapter.notifyDataSetChanged()
 }
 
 
