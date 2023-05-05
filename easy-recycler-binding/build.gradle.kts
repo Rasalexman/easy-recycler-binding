@@ -128,7 +128,7 @@ afterEvaluate {
                 artifactId = "easyrecyclerbinding"
                 version = appVersion
 
-                artifact(tasks["sourceJar"])
+                //artifact(tasks["sourceJar"])
             }
             create<MavenPublication>("debug") {
                 from(components["debug"])
@@ -138,7 +138,7 @@ afterEvaluate {
                 artifactId = "easyrecyclerbinding-debug"
                 version = appVersion
 
-                artifact(tasks["sourceJar"])
+                //artifact(tasks["sourceJar"])
             }
         }
 

@@ -1,5 +1,5 @@
 //------ APP VERSION
-extra["appVersion"] = "1.3.4"
+extra["appVersion"] = "1.3.6"
 
 //------ CONFIG DATA
 extra["minSdkVersion"] = 18
