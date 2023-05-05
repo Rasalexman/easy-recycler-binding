@@ -17,7 +17,8 @@ android {
 
     compileSdk = buildSdkVersion
     defaultConfig {
-        applicationId = "com.rasalexman.easyrecyclerbinding"
+        namespace = "com.rasalexman.erb"
+        applicationId = "com.rasalexman.erb"
         minSdk = minSdkVersion
         targetSdk = buildSdkVersion
         version = appVersion
@@ -38,17 +39,17 @@ android {
         }
     }
 
-    sourceSets {
-        getByName("main") {
-            java.setSrcDirs(
-                listOf(
-                    "${buildDir.absolutePath}/generated/source/kaptKotlin/",
-                    codePath
-                )
-            )
-            res.setSrcDirs(listOf(resPath))
-        }
-    }
+//    sourceSets {
+//        getByName("main") {
+//            java.setSrcDirs(
+//                listOf(
+//                    "${buildDir.absolutePath}/generated/source/kaptKotlin/",
+//                    codePath
+//                )
+//            )
+//            res.setSrcDirs(listOf(resPath))
+//        }
+//    }
 
     /*dexOptions {
         javaMaxHeapSize = "4g"

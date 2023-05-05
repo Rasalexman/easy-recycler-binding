@@ -19,6 +19,7 @@ android {
     compileSdk = buildSdkVersion
 
     defaultConfig {
+        namespace = "com.rasalexman.easyrecyclerbinding"
         minSdk = minSdkVersion
         targetSdk = buildSdkVersion
         version = appVersion
@@ -62,12 +63,12 @@ android {
         }
     }*/
 
-    val codePath: String by rootProject.extra
-    sourceSets {
-        getByName("main") {
-            java.setSrcDirs(listOf(codePath))
-        }
-    }
+//    val codePath: String by rootProject.extra
+//    sourceSets {
+//        getByName("main") {
+//            java.setSrcDirs(listOf(codePath))
+//        }
+//    }
 
     buildFeatures {
         dataBinding = true
@@ -86,12 +87,14 @@ dependencies {
     val coroutines: String by rootProject.extra
     val fragmentKtx: String by rootProject.extra
     val paging: String by rootProject.extra
+    val coreKtx: String by rootProject.extra
 
     compileOnly(viewpager2)
     compileOnly(recyclerview)
     implementation(coroutines)
     compileOnly(fragmentKtx)
     compileOnly(paging)
+    compileOnly(coreKtx)
 }
 
 tasks.register<Jar>(name = "sourceJar") {

@@ -2,10 +2,7 @@ package com.rasalexman.easyrecyclerbinding.common
 
 import android.widget.LinearLayout
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rasalexman.easyrecyclerbinding.ScrollPosition
@@ -18,7 +15,7 @@ internal class ScrollPositionObserver(
     recyclerView: RecyclerView,
     scrollPosition: ScrollPosition?,
     scrollListener: EndlessRecyclerOnScrollListener?
-) : LifecycleObserver {
+) : DefaultLifecycleObserver {
 
     private val ownerWeakRef = WeakReference(lifecycleOwner)
     private val scrollPositionWeakRef = WeakReference(scrollPosition)
@@ -35,19 +32,19 @@ internal class ScrollPositionObserver(
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onLifecycleOwnerStopped() {
+    override fun onStop(owner: LifecycleOwner) {
+        super.onStop(owner)
         saveScrollPosition()
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun onLifecycleOwnerResumed() {
+    override fun onResume(owner: LifecycleOwner) {
+        super.onResume(owner)
         val resumedItemsCount = recyclerWeakRef.get()?.adapter?.itemCount ?: 0
         adapterDataObserver?.changeScrollPosition(resumedItemsCount)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onLifecycleOwnerDestroyed() {
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
         clearWhenViewDestroy()
     }
 
