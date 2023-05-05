@@ -39,17 +39,17 @@ android {
         }
     }
 
-//    sourceSets {
-//        getByName("main") {
-//            java.setSrcDirs(
-//                listOf(
-//                    "${buildDir.absolutePath}/generated/source/kaptKotlin/",
-//                    codePath
-//                )
-//            )
-//            res.setSrcDirs(listOf(resPath))
-//        }
-//    }
+    sourceSets {
+        getByName("main") {
+            java.setSrcDirs(
+                listOf(
+                    "${buildDir.absolutePath}/generated/source/kaptKotlin/",
+                    codePath
+                )
+            )
+            res.setSrcDirs(listOf(resPath))
+        }
+    }
 
     /*dexOptions {
         javaMaxHeapSize = "4g"

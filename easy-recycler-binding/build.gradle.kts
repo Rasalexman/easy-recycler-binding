@@ -63,12 +63,12 @@ android {
         }
     }*/
 
-//    val codePath: String by rootProject.extra
-//    sourceSets {
-//        getByName("main") {
-//            java.setSrcDirs(listOf(codePath))
-//        }
-//    }
+    val codePath: String by rootProject.extra
+    sourceSets {
+        getByName("main") {
+            java.setSrcDirs(listOf(codePath))
+        }
+    }
 
     buildFeatures {
         dataBinding = true
